@@ -517,19 +517,34 @@ class Web3Integration {
                 throw new Error(`Address mismatch: signer=${signerAddress}, account=${userAddress}`);
             }
 
-            console.log('Staking parameters:', {
-                user: userAddress,
-                signer: signerAddress,
-                isStaking: true,
-                amount: amountForContract,
-                stakingNonce: stakingNonce.toString(),
-                evvmNonce: evvmNonce.toString(),
-                evvmID: evvmIDForSignature,
-                totalHGMAmount: ethers.utils.formatEther(totalAmount)
-            });
-
+            console.log('=== FINAL STAKING PARAMETERS ===');
+            console.log('User address:', userAddress);
+            console.log('Signer address:', signerAddress);
+            console.log('EVVM ID for signature:', evvmIDForSignature);
+            console.log('Amount (staking tokens):', amountForContract);
+            console.log('Staking nonce:', stakingNonce.toString());
+            console.log('EVVM nonce:', evvmNonce.toString());
+            console.log('Total HGM amount:', ethers.utils.formatEther(totalAmount));
+            console.log('Staking signature length:', stakingSignature.length);
+            console.log('EVVM signature length:', evvmSignature.length);
+            
+            // Verify the exact message that will be checked by contract
+            const expectedMessage = `${evvmIDForSignature},publicStaking,true,${amountForContract},${stakingNonce}`;
+            console.log('Expected message for contract:', expectedMessage);
+            
             // Call publicStaking - amount must be integer (staking tokens)
             // CRITICAL: All parameters must match exactly what was used in signatures
+            console.log('Calling publicStaking with parameters:');
+            console.log('  user:', userAddress);
+            console.log('  isStaking: true');
+            console.log('  amountOfStaking:', amountForContract);
+            console.log('  nonce:', stakingNonce.toString());
+            console.log('  signature:', stakingSignature.slice(0, 20) + '...');
+            console.log('  priorityFee_EVVM: 0');
+            console.log('  nonce_EVVM:', evvmNonce.toString());
+            console.log('  priorityFlag_EVVM: false');
+            console.log('  signature_EVVM:', evvmSignature.slice(0, 20) + '...');
+            
             const tx = await this.stakingContract.publicStaking(
                 userAddress,            // user - must match signer address used in signature
                 true,                   // isStaking
