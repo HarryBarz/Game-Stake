@@ -284,6 +284,9 @@ class Web3Integration {
     /**
      * Generate EVVM payment signature (for staking payment)
      * Format: {evvmID},pay,{receiverAddress},{token},{amount},{priorityFee},{nonce},{priorityFlag},{executor}
+     * 
+     * CRITICAL: The executor must be the Staking contract address, not the user's address!
+     * The Staking contract calls pay() with executor = address(this), so the signature must match.
      */
     async generateEVVMSignature(amount, nonce, priorityFee = 0, isAsync = false) {
         if (!this.signer) {
@@ -293,12 +296,41 @@ class Web3Integration {
         // Convert addresses to checksum format (ethers v5)
         const receiver = ethers.utils.getAddress(this.STAKING_ADDRESS);
         const token = ethers.utils.getAddress(this.PRINCIPAL_TOKEN_ADDRESS);
-        const executor = ethers.utils.getAddress(this.account);
+        // CRITICAL: Executor must be Staking contract address, not user address!
+        // The Staking contract passes address(this) as executor when calling pay()
+        const executor = ethers.utils.getAddress(this.STAKING_ADDRESS);
         
         // Message format: {evvmID},pay,{receiverAddress},{token},{amount},{priorityFee},{nonce},{priorityFlag},{executor}
         const message = `${this.evvmID},pay,${receiver},${token},${amount.toString()},${priorityFee.toString()},${nonce.toString()},${isAsync ? 'true' : 'false'},${executor}`;
         
+        console.log('=== EVVM PAYMENT SIGNATURE DEBUG ===');
+        console.log('Full message to sign:', message);
+        console.log('Message components:', {
+            evvmID: this.evvmID,
+            functionName: 'pay',
+            receiver: receiver,
+            token: token,
+            amount: amount.toString(),
+            priorityFee: priorityFee.toString(),
+            nonce: nonce.toString(),
+            priorityFlag: isAsync ? 'true' : 'false',
+            executor: executor
+        });
+        console.log('Signer address:', await this.signer.getAddress());
+        
         const signature = await this.signer.signMessage(message);
+        
+        // Verify signature locally
+        try {
+            const recoveredAddress = ethers.utils.verifyMessage(message, signature);
+            console.log('✅ EVVM Signature verification:', recoveredAddress === await this.signer.getAddress() ? 'PASSED' : 'FAILED');
+            console.log('Expected:', await this.signer.getAddress());
+            console.log('Recovered:', recoveredAddress);
+        } catch (e) {
+            console.warn('Could not verify EVVM signature locally:', e);
+        }
+        
+        console.log('EVVM Signature (first 20 chars):', signature.slice(0, 20) + '...');
         return signature;
     }
 
