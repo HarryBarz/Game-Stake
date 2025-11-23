@@ -353,6 +353,32 @@ class Web3Integration {
         }
 
         try {
+            // Ensure contracts are set up and EVVM ID is fetched
+            if (!this.evvmContract || !this.stakingContract) {
+                await this.setupContracts();
+            }
+            
+            // Ensure EVVM ID is set - fetch from contract
+            try {
+                const id = await this.evvmContract.getEvvmID();
+                this.evvmID = id.toString();
+                console.log('Fetched EVVM ID from contract:', this.evvmID);
+                if (this.evvmID === '0') {
+                    console.warn('EVVM ID is 0 - contract may not have setEvvmID() called yet');
+                    this.evvmID = '1078'; // Use registered ID as fallback
+                }
+            } catch (e) {
+                console.warn('Could not fetch EVVM ID:', e);
+                this.evvmID = '1078'; // Fallback
+            }
+            
+            // Check if public staking is enabled
+            const isEnabled = await this.isPublicStakingEnabled();
+            if (!isEnabled) {
+                throw new Error('Public staking is currently disabled. Please try again later.');
+            }
+            console.log('Public staking is enabled:', isEnabled);
+
             // Get staking price
             const price = await this.getStakingPrice();
             const totalAmount = ethers.utils.parseEther((parseFloat(amount) * parseFloat(price)).toString());
@@ -361,18 +387,23 @@ class Web3Integration {
             const stakingNonce = Date.now();
             const evvmNonce = await this.getNextSyncNonce();
 
-            // Convert amount to integer (staking tokens must be whole numbers or very specific decimals)
-            // Round to 6 decimal places, then convert to string for signature
+            // Convert amount to integer (staking tokens must be whole numbers)
             const amountNum = parseFloat(amount);
-            const amountRounded = Math.floor(amountNum * 1000000) / 1000000;
-            const amountForContract = Math.floor(amountRounded); // Contract expects integer staking tokens
+            const amountForContract = Math.floor(amountNum); // Contract expects integer staking tokens
             
             if (amountForContract <= 0) {
                 throw new Error('Staking amount must be at least 1 staking token');
             }
 
+            console.log('=== STAKING DEBUG ===');
+            console.log('EVVM ID:', this.evvmID);
+            console.log('Amount for contract:', amountForContract);
+            console.log('Staking nonce:', stakingNonce);
+            console.log('EVVM nonce:', evvmNonce);
+
             // Generate signatures - CRITICAL: amount in signature must match amount sent to contract
             const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonce);
+            
             // CRITICAL: For sync payments, the nonce in signature must match getNextCurrentSyncNonce
             const evvmSignature = await this.generateEVVMSignature(
                 totalAmount,    // amount in wei
@@ -387,7 +418,8 @@ class Web3Integration {
                 amount: amountForContract,
                 stakingNonce: stakingNonce.toString(),
                 evvmNonce: evvmNonce.toString(),
-                evvmID: this.evvmID
+                evvmID: this.evvmID,
+                totalHGMAmount: ethers.utils.formatEther(totalAmount)
             });
 
             // Call publicStaking - amount must be integer (staking tokens)
@@ -406,6 +438,9 @@ class Web3Integration {
             return tx;
         } catch (error) {
             console.error('Staking error:', error);
+            if (error.message && error.message.includes('execution reverted')) {
+                throw new Error('Transaction failed. Check console for details. Possible issues: Invalid signature, insufficient balance, or public staking disabled.');
+            }
             throw error;
         }
     }
