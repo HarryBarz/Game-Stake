@@ -1,0 +1,234 @@
+<html>
+<head>
+    <title>Mini Militia - Survival</title>
+    <link href="css/reset.css" rel="stylesheet" type="text/css"/>
+    <link href="css/style.css" rel="stylesheet" type="text/css"/>
+    <link href="css/staking.css" rel="stylesheet" type="text/css"/>
+    <link href="css/landing.css" rel="stylesheet" type="text/css"/>
+    <!-- Load ethers.js from CDN with fallback and cache busting -->
+    <script>
+        (function() {
+            let loaded = false;
+            function loadEthers(src, isFallback) {
+                const script = document.createElement('script');
+                script.src = src + '?v=' + Date.now(); // Cache busting
+                script.onload = function() {
+                    if (!loaded) {
+                        loaded = true;
+                        console.log('✅ ethers.js loaded from ' + (isFallback ? 'unpkg (fallback)' : 'jsDelivr'));
+                        // Verify it's ethers v5
+                        if (typeof ethers !== 'undefined' && ethers.providers && ethers.providers.Web3Provider) {
+                            console.log('✅ ethers v5 API confirmed');
+                        } else {
+                            console.error('❌ ethers loaded but wrong version or API missing');
+                        }
+                    }
+                };
+                script.onerror = function() {
+                    if (isFallback) {
+                        console.error('❌ Both CDNs failed to load ethers.js');
+                        alert('Failed to load ethers.js library. Please check your internet connection and refresh the page.');
+                    } else {
+                        console.log('⚠️ jsDelivr failed, trying unpkg...');
+                        loadEthers('https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js', true);
+                    }
+                };
+                document.head.appendChild(script);
+            }
+            loadEthers('https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js', false);
+        })();
+    </script>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landingPage">
+        <div class="landing-container">
+            <div class="game-logo">🎮 MINI MILITIA</div>
+            <div class="game-subtitle">Survival Mode with EVVM Staking</div>
+            <div class="connect-wallet-section">
+                <button id="connectWalletLanding" class="connect-wallet-btn">
+                    🔗 Connect Wallet
+                </button>
+                <div class="wallet-status" id="walletStatusLanding" style="display: none;">
+                    <div>Connected:</div>
+                    <div class="wallet-address" id="walletAddressLanding"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staking Page (Shows after wallet connection) -->
+    <div id="stakingPage">
+        <div class="staking-container">
+            <div class="staking-header-large">
+                <h1>💰 Staking & Rewards</h1>
+                <p>Stake tokens to unlock game bonuses and earn rewards</p>
+            </div>
+
+            <div class="staking-grid">
+                <div class="staking-card">
+                    <h3>Your Staked Amount</h3>
+                    <div class="value" id="stakedAmountFull">0</div>
+                    <div class="label">Staking Tokens</div>
+                </div>
+                <div class="staking-card">
+                    <h3>Your Balance</h3>
+                    <div class="value" id="userBalanceFull">0</div>
+                    <div class="label">HGM Tokens</div>
+                    <button id="getHGMBtn" class="action-btn-full" style="margin-top: 15px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 10px; font-size: 14px;">💧 Get Test HGM</button>
+                </div>
+                <div class="staking-card">
+                    <h3>Staking Price</h3>
+                    <div class="value" id="stakingPriceFull">5,083</div>
+                    <div class="label">HGM per Token</div>
+                </div>
+            </div>
+
+            <div class="staking-actions-full">
+                <div class="action-group-full">
+                    <label>Stake Amount (HGM Tokens)</label>
+                    <div class="input-group-full">
+                        <input type="number" id="stakeAmountFull" placeholder="Enter amount in HGM" min="0.0001" step="0.0001">
+                        <span class="suffix">HGM</span>
+                    </div>
+                    <div class="label" id="stakeTokensFull" style="margin-bottom: 15px; color: #4CAF50; font-weight: bold;">= 0 Staking Tokens</div>
+                    <button id="stakeBtnFull" class="action-btn-full stake-btn-full">Stake Tokens</button>
+                </div>
+
+                <div class="action-group-full">
+                    <label>Unstake Amount (Staking Tokens)</label>
+                    <div class="input-group-full">
+                        <input type="number" id="unstakeAmountFull" placeholder="Enter staking tokens to unstake" min="0.0001" step="0.0001">
+                        <span class="suffix">Staking Tokens</span>
+                    </div>
+                    <div class="label" id="unstakeValueFull" style="margin-bottom: 15px; color: #f44336; font-weight: bold;">= 0 HGM</div>
+                    <button id="unstakeBtnFull" class="action-btn-full unstake-btn-full">Unstake Tokens</button>
+                </div>
+
+                <div class="action-group-full">
+                    <button id="claimRewardsBtnFull" class="action-btn-full claim-btn-full">Claim Rewards</button>
+                </div>
+            </div>
+
+            <div id="stakingMessageFull" style="text-align: center; padding: 20px; margin: 20px 0; border-radius: 10px; display: none;"></div>
+
+            <div class="start-game-section">
+                <h2 style="margin-bottom: 20px; font-size: 32px;">Ready to Play?</h2>
+                <p style="margin-bottom: 30px; font-size: 18px; opacity: 0.9;">
+                    Stake tokens to unlock bonuses: Score multipliers, faster respawn, and health boosts!
+                </p>
+                <button id="startGameBtn" class="start-game-btn">🚀 Start Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Container (Hidden Initially) -->
+    <div id="gameContainer">
+        <div class="wrapper">
+            <canvas id = "canvas" width="4000" height="640"></canvas>
+            <div id = "messageBox" class = "message noselect">
+                <h3 id="messageHeading">SURVIVAL</h3>
+                <div><span>SCORE: </span><span id = "score"></span></div>
+                <div><span>KILLS: </span><span id = "kills"></span></div>
+
+                <div id = "respawn"><span>RESPAWNING: </span><span id="respawn-value"></span></div>
+
+                <button id = "retryButton" class = "retryButton" onclick="javascript:location.reload();">Retry</button>
+            </div>
+        </div>
+    </div>
+    <!-- Game Scripts (Loaded but game hidden initially) -->
+    <script src="js/Resources.js" type="text/javascript"></script>
+    <script src="js/Preload.js" type="text/javascript"></script>
+    <script src="js/CollisionHandler.js" type="text/javascript"></script>
+    <script src="js/Constants.js" type="text/javascript"></script>
+    <script src="js/Camera.js" type="text/javascript"></script>
+    <script src="js/Bullet.js" type="text/javascript"></script>
+    <script src="js/Weapon.js" type="text/javascript"></script>
+    <script src="js/TileGround.js" type="text/javascript"></script>
+    <script src="js/RobotUnit.js" type="text/javascript"></script>
+    <script src="js/Util.js" type="text/javascript"></script>
+    <script src="js/Actor.js" type="text/javascript"></script>
+    <script src="js/Shyame.js" type="text/javascript"></script>
+    <script src="js/Game.js" type="text/javascript"></script>
+    
+    <!-- Web3 & Staking Scripts -->
+    <script src="js/Web3Integration.js" type="text/javascript"></script>
+    <script src="js/StakingUI.js" type="text/javascript"></script>
+    <script src="js/LandingPage.js" type="text/javascript"></script>
+    <script src="js/GameStakingIntegration.js" type="text/javascript"></script>
+    
+    <script>
+        // Wait for ethers.js to load, then initialize
+        function waitForEthers() {
+            return new Promise((resolve, reject) => {
+                function checkEthers() {
+                    if (typeof ethers !== 'undefined') {
+                        // Verify it's ethers v5 with correct API
+                        if (ethers.providers && ethers.providers.Web3Provider) {
+                            console.log('✅ ethers.js v5 loaded and verified');
+                            resolve();
+                            return true;
+                        } else {
+                            console.error('❌ ethers.js loaded but wrong version (missing providers.Web3Provider)');
+                            console.log('ethers object:', ethers);
+                            reject(new Error('ethers.js v5 API not found. Wrong version loaded.'));
+                            return false;
+                        }
+                    }
+                    return false;
+                }
+
+                // Check immediately
+                if (checkEthers()) return;
+                
+                // Wait up to 10 seconds for ethers to load
+                let attempts = 0;
+                const maxAttempts = 100; // 10 seconds
+                
+                console.log('⏳ Waiting for ethers.js to load...');
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    if (checkEthers()) {
+                        clearInterval(checkInterval);
+                        console.log('✅ ethers.js loaded after ' + (attempts * 100) + 'ms');
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        console.error('❌ ethers.js failed to load after 10 seconds');
+                        reject(new Error('ethers.js failed to load. The CDN might be blocked or unavailable.'));
+                    }
+                }, 100);
+            });
+        }
+
+        // Initialize landing page
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 DOM loaded, waiting for ethers.js...');
+            
+            try {
+                // Wait for ethers to load
+                await waitForEthers();
+
+                // Initialize Web3
+                console.log('🔧 Initializing Web3...');
+                const web3Integration = new Web3Integration();
+                await web3Integration.init();
+                
+                // Initialize landing page
+                console.log('🎮 Initializing landing page...');
+                window.landingPage = new LandingPage(web3Integration);
+                window.web3Integration = web3Integration;
+                
+                console.log('✅ Landing page initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to initialize landing page:', error);
+                
+                // Show user-friendly error
+                const errorMsg = error.message || 'Unknown error occurred';
+                alert('Failed to initialize: ' + errorMsg + '\n\nPossible solutions:\n1. Check your internet connection\n2. Try refreshing the page\n3. Check browser console for details (F12)');
+            }
+        });
+    </script>
+</body>
+</html>
