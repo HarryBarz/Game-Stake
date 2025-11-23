@@ -244,25 +244,29 @@ class Web3Integration {
             throw new Error('Wallet not connected');
         }
 
-        // CRITICAL: Contract uses Strings.toString() which converts to decimal string
-        // Ensure amount is an integer (contract expects uint256)
-        const amountNum = Math.floor(parseFloat(amount));
+        // CRITICAL: Contract uses Strings.toString() which converts uint256 to decimal string
+        // Amount and nonce come in as numbers, convert to strings for message
+        const amountNum = Math.floor(Number(amount));
+        const nonceNum = Math.floor(Number(nonce));
+        
         if (amountNum <= 0) {
             throw new Error('Amount must be a positive integer');
         }
-        const amountStr = amountNum.toString(); // No decimals, no scientific notation
-        const nonceStr = nonce.toString(); // Convert to string
+        
+        // Convert to strings exactly as contract does with Strings.toString()
+        const amountStr = amountNum.toString();
+        const nonceStr = nonceNum.toString();
         
         // CRITICAL: Message format must match contract EXACTLY
-        // Contract builds: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
-        // This creates: "{evvmID},publicStaking,true,{amount},{nonce}"
+        // Contract: SignatureRecover.signatureVerification(
+        //   Strings.toString(evvmID),  // "1078"
+        //   "publicStaking",
+        //   string.concat("true", ",", Strings.toString(amount), ",", Strings.toString(nonce))
+        // )
+        // Final: "{evvmID},publicStaking,true,{amount},{nonce}"
         const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amountStr},${nonceStr}`;
         
-        const signerAddress = await this.signer.getAddress();
-        
-        // Sign message using EIP-191 format (ethers.js signMessage handles this automatically)
         const signature = await this.signer.signMessage(message);
-        
         return signature;
     }
 
@@ -414,16 +418,20 @@ class Web3Integration {
 
             const userAddress = ethers.utils.getAddress(this.account);
             
-            // CRITICAL: Ensure nonce is a number (not string) for signature generation
-            // But use the same value (as string) in the signature message
-            const stakingNonceNum = parseInt(stakingNonce.toString());
-            const evvmNonceNum = parseInt(evvmNonce.toString());
+            // CRITICAL: Nonces must be numbers for contract call, strings for signature message
+            const stakingNonceNum = Number(stakingNonce);
+            const evvmNonceNum = Number(evvmNonce);
             
-            // Generate signatures - use string nonce for message, number for contract call
-            const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonceNum.toString());
+            // Build exact message that contract will verify
+            // Contract: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
+            const expectedMessage = `${evvmIDForSignature},publicStaking,true,${amountForContract},${stakingNonceNum}`;
+            console.log('Expected signature message:', expectedMessage);
+            
+            // Generate signatures
+            const stakingSignature = await this.generateStakingSignature(true, amountForContract, stakingNonceNum);
             const evvmSignature = await this.generateEVVMSignature(
                 totalAmount,
-                evvmNonceNum.toString(),
+                evvmNonceNum,
                 0,
                 false
             );
