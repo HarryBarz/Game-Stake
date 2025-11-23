@@ -247,11 +247,13 @@ class Web3Integration {
         const amountStr = Math.floor(parseFloat(amount)).toString();
         const nonceStr = nonce.toString();
         
-        // Message format matches contract: {evvmID},publicStaking,{isStaking},{amount},{nonce}
+        // CRITICAL: Message format must match contract exactly
         // Contract builds: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
+        // Final format: "{evvmID},publicStaking,{isStaking},{amount},{nonce}"
         const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amountStr},${nonceStr}`;
         
-        console.log('Signing staking message:', message);
+        console.log('=== SIGNATURE DEBUG ===');
+        console.log('Full message to sign:', message);
         console.log('Message components:', {
             evvmID: this.evvmID,
             functionName: 'publicStaking',
@@ -259,10 +261,23 @@ class Web3Integration {
             amount: amountStr,
             nonce: nonceStr
         });
+        console.log('Signer address:', await this.signer.getAddress());
         
         // Sign message using EIP-191 format (ethers.js signMessage handles this automatically)
+        // ethers.js signMessage adds: "\x19Ethereum Signed Message:\n" + length + message
         const signature = await this.signer.signMessage(message);
-        console.log('Signature generated:', signature.slice(0, 20) + '...');
+        
+        // Verify signature locally
+        try {
+            const recoveredAddress = ethers.utils.verifyMessage(message, signature);
+            console.log('✅ Signature verification:', recoveredAddress === await this.signer.getAddress() ? 'PASSED' : 'FAILED');
+            console.log('Expected:', await this.signer.getAddress());
+            console.log('Recovered:', recoveredAddress);
+        } catch (e) {
+            console.warn('Could not verify signature locally:', e);
+        }
+        
+        console.log('Signature (first 20 chars):', signature.slice(0, 20) + '...');
         return signature;
     }
 
