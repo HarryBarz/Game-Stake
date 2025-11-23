@@ -418,9 +418,9 @@ class Web3Integration {
             const price = await this.getStakingPrice();
             const totalAmount = ethers.utils.parseEther((parseFloat(amount) * parseFloat(price)).toString());
             
-            // Generate nonces
-            const stakingNonce = Date.now();
-            const evvmNonce = await this.getNextSyncNonce();
+            // Generate nonces - CRITICAL: nonce must be uint256 (number, not string)
+            const stakingNonce = Date.now(); // This is a number, which is fine for uint256
+            const evvmNonce = await this.getNextSyncNonce(); // This returns a string, convert to number
 
             // Convert amount to integer (staking tokens must be whole numbers)
             const amountNum = parseFloat(amount);
@@ -449,14 +449,18 @@ class Web3Integration {
 
             const userAddress = ethers.utils.getAddress(this.account);
             
+            // CRITICAL: Convert nonces to proper types for contract
+            const stakingNonceNum = parseInt(stakingNonce.toString());
+            const evvmNonceNum = parseInt(evvmNonce.toString());
+            
             const tx = await this.stakingContract.publicStaking(
                 userAddress,
                 true,
                 amountForContract,
-                stakingNonce,
+                stakingNonceNum,
                 stakingSignature,
                 0,
-                evvmNonce,
+                evvmNonceNum,
                 false,
                 evvmSignature
             );
