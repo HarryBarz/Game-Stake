@@ -4,8 +4,8 @@
   "description": "Mini Militia game with EVVM staking integration",
   "type": "module",
   "scripts": {
-    "dev": "vite mini-militia-fresh",
-    "build": "vite build",
+    "dev": "vite",
+    "build": "node build.js",
     "preview": "vite preview",
     "deploy": "npm run build && vercel --prod"
   },
