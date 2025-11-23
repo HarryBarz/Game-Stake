@@ -105,8 +105,18 @@ class LandingPage {
                 const tx = await this.web3.stakeHGM(hgmAmount);
                 this.showMessage('Transaction sent! Waiting for confirmation...', 'info');
                 
-                const receipt = await this.web3.waitForTransaction(tx);
-                this.showMessage('Staking successful!', 'success');
+                // Use watchTransaction for better UX with status updates
+                await this.web3.watchTransaction(tx.hash, (status, data) => {
+                    if (status === 'pending') {
+                        this.showMessage('Transaction pending...', 'info');
+                    } else if (status === 'confirmed') {
+                        this.showMessage('Staking successful!', 'success');
+                        document.getElementById('stakeAmountFull').value = '';
+                        this.refreshStakingData();
+                    } else if (status === 'failed') {
+                        this.showMessage('Transaction failed. Please try again.', 'error');
+                    }
+                });
                 
                 document.getElementById('stakeAmountFull').value = '';
                 await this.refreshStakingData();
@@ -125,12 +135,29 @@ class LandingPage {
             }
 
             try {
+                // Check unlock times first
+                const unlockTimes = await this.web3.getUnlockTimes();
+                if (!unlockTimes.canUnstake && unlockTimes.fullUnstakeUnlockDate) {
+                    this.showMessage(`Cannot unstake yet. Available: ${unlockTimes.fullUnstakeUnlockDate.toLocaleString()}`, 'error');
+                    return;
+                }
+
                 this.showMessage('Processing unstake transaction...', 'info');
                 const tx = await this.web3.unstake(amount);
                 this.showMessage('Transaction sent! Waiting for confirmation...', 'info');
                 
-                const receipt = await this.web3.waitForTransaction(tx);
-                this.showMessage('Unstaking successful!', 'success');
+                // Use watchTransaction for better UX
+                await this.web3.watchTransaction(tx.hash, (status, data) => {
+                    if (status === 'pending') {
+                        this.showMessage('Transaction pending...', 'info');
+                    } else if (status === 'confirmed') {
+                        this.showMessage('Unstaking successful!', 'success');
+                        document.getElementById('unstakeAmountFull').value = '';
+                        this.refreshStakingData();
+                    } else if (status === 'failed') {
+                        this.showMessage('Transaction failed. Please try again.', 'error');
+                    }
+                });
                 
                 document.getElementById('unstakeAmountFull').value = '';
                 await this.refreshStakingData();
@@ -210,24 +237,75 @@ class LandingPage {
         if (!this.web3 || !this.web3.account) return;
 
         try {
-            const staked = await this.web3.getUserStakedAmount();
-            const balance = await this.web3.getUserBalance();
-            const price = await this.web3.getStakingPrice();
-            const enabled = await this.web3.isPublicStakingEnabled();
+            // Use the new getCompleteStakingInfo() function for better performance
+            const info = await this.web3.getCompleteStakingInfo();
+            
+            if (!info) {
+                console.warn('Could not get staking info');
+                return;
+            }
 
-            this.stakingData = { staked, balance, price, enabled };
+            this.stakingData = {
+                staked: info.staked.toString(),
+                balance: info.balance.toString(),
+                price: info.price.toString(),
+                enabled: info.enabled,
+                tier: info.tier,
+                unlockTimes: info.unlockTimes,
+                canPlay: info.canPlay
+            };
 
             // Update UI
-            document.getElementById('stakedAmountFull').textContent = parseFloat(staked).toFixed(2);
-            document.getElementById('userBalanceFull').textContent = parseFloat(balance).toFixed(2);
-            document.getElementById('stakingPriceFull').textContent = parseFloat(price).toLocaleString();
+            document.getElementById('stakedAmountFull').textContent = info.staked.toFixed(2);
+            document.getElementById('userBalanceFull').textContent = info.balance.toFixed(2);
+            document.getElementById('stakingPriceFull').textContent = info.price.toLocaleString();
 
-            // Enable/disable buttons
+            // Update tier display
+            const tierCard = document.getElementById('tierCard');
+            const tierElement = document.getElementById('stakingTierFull');
+            if (tierCard && tierElement) {
+                tierElement.textContent = `Tier ${info.tier}`;
+                if (info.tier > 0) {
+                    tierCard.style.display = 'block';
+                    // Color based on tier
+                    const colors = ['', '#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#F44336'];
+                    tierElement.style.color = colors[info.tier] || '#4CAF50';
+                } else {
+                    tierCard.style.display = 'none';
+                }
+            }
+
+            // Update unlock times if elements exist
+            const unlockInfo = document.getElementById('unlockInfoFull');
+            if (unlockInfo) {
+                if (!info.unlockTimes.canStake && info.unlockTimes.stakeUnlockDate) {
+                    unlockInfo.innerHTML = `<small>⏱️ Can stake again: ${info.unlockTimes.stakeUnlockDate.toLocaleString()}</small>`;
+                    unlockInfo.style.display = 'block';
+                } else if (!info.unlockTimes.canUnstake && info.unlockTimes.fullUnstakeUnlockDate) {
+                    unlockInfo.innerHTML = `<small>⏱️ Full unstake available: ${info.unlockTimes.fullUnstakeUnlockDate.toLocaleString()}</small>`;
+                    unlockInfo.style.display = 'block';
+                } else {
+                    unlockInfo.style.display = 'none';
+                }
+            }
+
+            // Enable/disable buttons based on unlock times
             const stakeBtn = document.getElementById('stakeBtnFull');
             const unstakeBtn = document.getElementById('unstakeBtnFull');
             
-            stakeBtn.disabled = !enabled;
-            unstakeBtn.disabled = !enabled || parseFloat(staked) === 0;
+            stakeBtn.disabled = !info.enabled || !info.unlockTimes.canStake;
+            unstakeBtn.disabled = !info.enabled || info.staked === 0 || !info.unlockTimes.canUnstake;
+
+            // Update play button if it exists
+            const playBtn = document.getElementById('startGameBtn');
+            if (playBtn) {
+                playBtn.disabled = !info.canPlay;
+                if (info.canPlay) {
+                    playBtn.textContent = '🎮 Play Game';
+                } else {
+                    playBtn.textContent = '🔒 Stake to Play';
+                }
+            }
 
         } catch (error) {
             console.error('Error refreshing staking data:', error);

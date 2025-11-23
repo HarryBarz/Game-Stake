@@ -65,7 +65,7 @@
                 <p>Stake tokens to unlock game bonuses and earn rewards</p>
             </div>
 
-            <div class="staking-grid">
+            <div class="staking-grid" id="stakingStatsFull">
                 <div class="staking-card">
                     <h3>Your Staked Amount</h3>
                     <div class="value" id="stakedAmountFull">0</div>
@@ -82,7 +82,14 @@
                     <div class="value" id="stakingPriceFull">5,083</div>
                     <div class="label">HGM per Token</div>
                 </div>
+                <div class="staking-card" id="tierCard" style="display: none;">
+                    <h3>Staking Tier</h3>
+                    <div class="value" id="stakingTierFull" style="font-size: 2em; color: #4CAF50;">Tier 0</div>
+                    <div class="label">Higher tier = Better perks</div>
+                </div>
             </div>
+            
+            <div id="unlockInfoFull" style="display: none; text-align: center; padding: 15px; background: rgba(255, 193, 7, 0.1); border-radius: 10px; margin: 20px 0; color: #FF9800;"></div>
 
             <div class="staking-actions-full">
                 <div class="action-group-full">
