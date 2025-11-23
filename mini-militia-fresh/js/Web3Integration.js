@@ -160,19 +160,20 @@ class Web3Integration {
             this.signer
         );
 
-        // Get EVVM ID
+        // Get EVVM ID - CRITICAL: Must match what contract uses
         try {
             const id = await this.evvmContract.getEvvmID();
-            this.evvmID = id.toString();
-            // If ID is 0, it means it hasn't been set yet - use a placeholder
-            if (this.evvmID === '0') {
-                console.warn('EVVM ID not set yet. Using registered ID 1078.');
-                this.evvmID = '1078'; // Your registered EVVM ID
+            const idStr = id.toString();
+            // If ID is 0, it means it hasn't been set yet
+            if (idStr === '0') {
+                console.error('❌ EVVM ID is 0 on contract! You must call setEvvmID(1078) on the EVVM contract first.');
+                throw new Error('EVVM ID not set on contract. Please call setEvvmID(1078) on the EVVM contract.');
             }
+            this.evvmID = idStr;
+            console.log('✅ EVVM ID fetched from contract:', this.evvmID);
         } catch (error) {
-            console.warn('Could not fetch EVVM ID:', error);
-            // Use your registered EVVM ID as fallback
-            this.evvmID = '1078'; // Your registered EVVM ID
+            console.error('❌ Could not fetch EVVM ID:', error);
+            throw new Error('Failed to fetch EVVM ID from contract. Please ensure the contract is properly deployed and EVVM ID is set.');
         }
     }
 
@@ -243,16 +244,29 @@ class Web3Integration {
             throw new Error('Wallet not connected');
         }
 
-        // Ensure amount is an integer string (contract expects uint256)
-        const amountStr = Math.floor(parseFloat(amount)).toString();
-        const nonceStr = nonce.toString();
+        // CRITICAL: Contract uses Strings.toString() which converts to decimal string
+        // Ensure amount is an integer (contract expects uint256)
+        const amountNum = Math.floor(parseFloat(amount));
+        if (amountNum <= 0) {
+            throw new Error('Amount must be a positive integer');
+        }
+        const amountStr = amountNum.toString(); // No decimals, no scientific notation
+        const nonceStr = nonce.toString(); // Convert to string
         
-        // CRITICAL: Message format must match contract exactly
-        // Contract builds: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
-        // Final format: "{evvmID},publicStaking,{isStaking},{amount},{nonce}"
+        // CRITICAL: Message format must match contract EXACTLY
+        // Contract: SignatureRecover.signatureVerification(
+        //   Strings.toString(evvmID),  // EVVM ID as string
+        //   "publicStaking",           // function name
+        //   string.concat("true", ",", Strings.toString(amount), ",", Strings.toString(nonce)),  // inputs
+        //   signature,
+        //   user
+        // )
+        // Final message: "{evvmID},publicStaking,{isStaking},{amount},{nonce}"
         const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amountStr},${nonceStr}`;
         
-        console.log('=== SIGNATURE DEBUG ===');
+        const signerAddress = await this.signer.getAddress();
+        
+        console.log('=== STAKING SIGNATURE DEBUG ===');
         console.log('Full message to sign:', message);
         console.log('Message components:', {
             evvmID: this.evvmID,
@@ -261,23 +275,30 @@ class Web3Integration {
             amount: amountStr,
             nonce: nonceStr
         });
-        console.log('Signer address:', await this.signer.getAddress());
+        console.log('Signer address:', signerAddress);
+        console.log('Message length:', message.length);
         
         // Sign message using EIP-191 format (ethers.js signMessage handles this automatically)
         // ethers.js signMessage adds: "\x19Ethereum Signed Message:\n" + length + message
         const signature = await this.signer.signMessage(message);
         
-        // Verify signature locally
+        // Verify signature locally to catch errors early
         try {
             const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-            console.log('✅ Signature verification:', recoveredAddress === await this.signer.getAddress() ? 'PASSED' : 'FAILED');
-            console.log('Expected:', await this.signer.getAddress());
-            console.log('Recovered:', recoveredAddress);
+            const isValid = recoveredAddress.toLowerCase() === signerAddress.toLowerCase();
+            console.log('✅ Local signature verification:', isValid ? 'PASSED' : 'FAILED');
+            if (!isValid) {
+                console.error('❌ Signature mismatch!');
+                console.error('Expected signer:', signerAddress);
+                console.error('Recovered address:', recoveredAddress);
+                throw new Error('Signature verification failed locally');
+            }
         } catch (e) {
-            console.warn('Could not verify signature locally:', e);
+            console.error('❌ Local signature verification error:', e);
+            throw e;
         }
         
-        console.log('Signature (first 20 chars):', signature.slice(0, 20) + '...');
+        console.log('✅ Staking signature generated successfully');
         return signature;
     }
 
@@ -446,19 +467,22 @@ class Web3Integration {
             }
 
             // CRITICAL: Fetch EVVM ID fresh from contract to ensure it matches what contract will use
+            // The contract calls Evvm(EVVM_ADDRESS).getEvvmID() when verifying, so we must use the exact same value
             let evvmIDForSignature;
             try {
                 const id = await this.evvmContract.getEvvmID();
                 evvmIDForSignature = id.toString();
                 if (evvmIDForSignature === '0') {
-                    console.warn('⚠️ EVVM ID is 0 on contract. Using registered ID 1078.');
-                    evvmIDForSignature = '1078';
+                    throw new Error('EVVM ID is 0 on contract. You must call setEvvmID(1078) on the EVVM contract first.');
                 }
                 // Update our cached value
+                if (this.evvmID !== evvmIDForSignature) {
+                    console.warn('⚠️ EVVM ID changed! Old:', this.evvmID, 'New:', evvmIDForSignature);
+                }
                 this.evvmID = evvmIDForSignature;
             } catch (error) {
-                console.warn('Could not fetch EVVM ID, using cached:', error);
-                evvmIDForSignature = this.evvmID || '1078';
+                console.error('❌ Failed to fetch EVVM ID:', error);
+                throw new Error('Failed to fetch EVVM ID from contract: ' + error.message);
             }
 
             console.log('=== STAKING DEBUG ===');
