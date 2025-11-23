@@ -1,0 +1,66 @@
+# Mini Militia - EVVM Staking Game
+
+A web-based survival game integrated with EVVM staking on Arbitrum Sepolia testnet.
+
+## Features
+
+- 🎮 **Mini Militia Survival Game** - Classic side-scrolling shooter
+- 💰 **EVVM Staking Integration** - Stake HGM tokens to unlock game bonuses
+- 🔗 **Web3 Wallet Support** - Connect with MetaMask
+- 🎯 **Staking Bonuses** - Score multipliers, faster respawn, health boosts
+- 📊 **Full Staking UI** - Stake, unstake, and claim rewards
+
+## Tech Stack
+
+- **Frontend**: HTML5 Canvas, JavaScript
+- **Web3**: ethers.js v5
+- **Blockchain**: Arbitrum Sepolia Testnet
+- **Smart Contracts**: EVVM Testnet Contracts
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies (if any)
+3. Open `mini-militia-fresh/index.html` in a browser or use a local server
+
+## Local Development
+
+```bash
+cd mini-militia-fresh
+python3 -m http.server 8080
+```
+
+Then open `http://localhost:8080` in your browser.
+
+## Deployment
+
+### Vercel
+
+1. Push to GitHub
+2. Import repository in Vercel
+3. Set build command: (none needed for static site)
+4. Set output directory: `mini-militia-fresh`
+5. Deploy!
+
+## Configuration
+
+- **EVVM ID**: Set in `js/Web3Integration.js` (currently auto-fetched from contract)
+- **Contract Addresses**: Configured in `js/Web3Integration.js`
+- **Network**: Arbitrum Sepolia (Chain ID: 421614)
+
+## Game Flow
+
+1. **Landing Page** → Connect Wallet
+2. **Staking Page** → Stake HGM tokens
+3. **Game** → Play with staking bonuses applied
+
+## Staking Bonuses
+
+- **1-10 tokens**: 10% score bonus, faster respawn
+- **10-50 tokens**: 25% score bonus, faster respawn, health boost
+- **50+ tokens**: 50% score bonus, faster respawn, health boost
+
+## License
+
+EVVM Noncommercial License v1.0
+
