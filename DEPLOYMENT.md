@@ -2,9 +2,23 @@
 
 ## ✅ What's Configured
 
-1. **Vercel Auto-Deploy**: When you push to GitHub, Vercel automatically deploys
-2. **Auto-Push Script**: Easy script to commit and push changes
-3. **Git Hooks**: Optional auto-push after commits
+1. **Vite Build System**: Modern, fast build tool with hot reloading
+2. **Vercel Auto-Deploy**: When you push to GitHub, Vercel automatically builds and deploys
+3. **Auto-Push Script**: Easy script to commit and push changes
+4. **Dynamic Development**: Hot module replacement for instant updates
+
+## 🚀 Development (Local)
+
+### Start Development Server (with hot reloading)
+
+```bash
+npm run dev
+```
+
+This will:
+- ✅ Start Vite dev server on http://localhost:8080
+- ✅ Enable hot module replacement (instant updates)
+- ✅ Auto-reload on file changes
 
 ## 🚀 Quick Deploy
 
@@ -18,7 +32,7 @@ This will:
 - ✅ Add all changes
 - ✅ Commit with your message
 - ✅ Push to GitHub
-- ✅ Trigger Vercel auto-deploy
+- ✅ Vercel auto-builds and deploys
 
 ### Option 2: Manual Git Commands
 
@@ -28,7 +42,7 @@ git commit -m "Your message"
 git push origin main
 ```
 
-Vercel will automatically deploy after the push!
+Vercel will automatically build and deploy after the push!
 
 ## 🔧 Setup Vercel GitHub Integration
 

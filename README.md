@@ -25,6 +25,17 @@ A web-based survival game integrated with EVVM staking on Arbitrum Sepolia testn
 
 ## Local Development
 
+### Option 1: Vite Dev Server (Recommended - with hot reloading)
+
+```bash
+npm install
+npm run dev
+```
+
+Opens `http://localhost:8080` with hot module replacement - changes appear instantly!
+
+### Option 2: Simple HTTP Server
+
 ```bash
 cd mini-militia-fresh
 python3 -m http.server 8080
@@ -34,13 +45,17 @@ Then open `http://localhost:8080` in your browser.
 
 ## Deployment
 
-### Vercel
+### Vercel (Auto-Deploy)
 
 1. Push to GitHub
 2. Import repository in Vercel
-3. Set build command: (none needed for static site)
-4. Set output directory: `mini-militia-fresh`
-5. Deploy!
+3. Vercel will auto-detect Vite configuration
+4. Framework Preset: **Vite** (auto-detected)
+5. Build Command: `npm run build` (auto-detected)
+6. Output Directory: `dist` (auto-detected)
+7. Deploy!
+
+**Note**: Vercel automatically builds and deploys on every push to `main` branch.
 
 ## Configuration
 
