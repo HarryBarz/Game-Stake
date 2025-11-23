@@ -348,7 +348,7 @@ Indexer updates DB.
 
 ##  **LAYER 3 — FULL DEVELOPER FLOW (BACKEND + INDEXER)**
 
-### 🔄 **1) INDEXER**
+### **1) INDEXER**
 
 Listens to events on chain:
 
@@ -424,7 +424,7 @@ Everything is verifiable, secure, and smooth.
 
 ---
 
-## 📋 **Implementation Status**
+## **Implementation Status**
 
 ###  Completed
 - [x] Frontend wallet connection (MetaMask)
