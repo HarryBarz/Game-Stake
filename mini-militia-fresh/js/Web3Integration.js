@@ -243,12 +243,26 @@ class Web3Integration {
             throw new Error('Wallet not connected');
         }
 
-        // Message format: {evvmID},publicStaking,{isStaking},{amount},{nonce}
-        // Amount should be the staking token amount as a string (e.g., "1", "10", not in wei)
-        const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amount.toString()},${nonce.toString()}`;
+        // Ensure amount is an integer string (contract expects uint256)
+        const amountStr = Math.floor(parseFloat(amount)).toString();
+        const nonceStr = nonce.toString();
+        
+        // Message format matches contract: {evvmID},publicStaking,{isStaking},{amount},{nonce}
+        // Contract builds: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
+        const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amountStr},${nonceStr}`;
+        
+        console.log('Signing staking message:', message);
+        console.log('Message components:', {
+            evvmID: this.evvmID,
+            functionName: 'publicStaking',
+            isStaking: isStaking ? 'true' : 'false',
+            amount: amountStr,
+            nonce: nonceStr
+        });
         
         // Sign message using EIP-191 format (ethers.js signMessage handles this automatically)
         const signature = await this.signer.signMessage(message);
+        console.log('Signature generated:', signature.slice(0, 20) + '...');
         return signature;
     }
 
@@ -312,17 +326,17 @@ class Web3Integration {
             // Convert HGM to staking tokens
             const stakingTokens = hgmNum / priceNum;
             
-            // Round to 6 decimal places to avoid precision issues
-            const stakingTokensRounded = Math.floor(stakingTokens * 1000000) / 1000000;
+            // Round down to whole staking tokens (contract requires integer amounts)
+            const stakingTokensWhole = Math.floor(stakingTokens);
 
-            if (stakingTokensRounded <= 0) {
+            if (stakingTokensWhole <= 0) {
                 throw new Error(`Amount too small. Minimum: ${priceNum} HGM for 1 staking token`);
             }
 
-            console.log(`Staking ${hgmNum} HGM = ${stakingTokensRounded} staking tokens`);
+            console.log(`Staking ${hgmNum} HGM = ${stakingTokensWhole} staking tokens`);
 
-            // Use the stake function with staking tokens
-            return await this.stake(stakingTokensRounded.toString());
+            // Use the stake function with whole staking tokens
+            return await this.stake(stakingTokensWhole.toString());
         } catch (error) {
             console.error('StakeHGM error:', error);
             throw error;
@@ -347,8 +361,18 @@ class Web3Integration {
             const stakingNonce = Date.now();
             const evvmNonce = await this.getNextSyncNonce();
 
-            // Generate signatures
-            const stakingSignature = await this.generateStakingSignature(true, amount, stakingNonce);
+            // Convert amount to integer (staking tokens must be whole numbers or very specific decimals)
+            // Round to 6 decimal places, then convert to string for signature
+            const amountNum = parseFloat(amount);
+            const amountRounded = Math.floor(amountNum * 1000000) / 1000000;
+            const amountForContract = Math.floor(amountRounded); // Contract expects integer staking tokens
+            
+            if (amountForContract <= 0) {
+                throw new Error('Staking amount must be at least 1 staking token');
+            }
+
+            // Generate signatures - CRITICAL: amount in signature must match amount sent to contract
+            const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonce);
             // CRITICAL: For sync payments, the nonce in signature must match getNextCurrentSyncNonce
             const evvmSignature = await this.generateEVVMSignature(
                 totalAmount,    // amount in wei
@@ -357,22 +381,20 @@ class Web3Integration {
                 false           // sync (priorityFlag = false)
             );
 
-            // Convert amount to BigNumber (staking tokens, not wei)
-            const amountBN = ethers.BigNumber.from(Math.floor(parseFloat(amount) * 1000000).toString()).div(1000000);
-            
             console.log('Staking parameters:', {
                 user: this.account,
                 isStaking: true,
-                amount: amountBN.toString(),
+                amount: amountForContract,
                 stakingNonce: stakingNonce.toString(),
-                evvmNonce: evvmNonce.toString()
+                evvmNonce: evvmNonce.toString(),
+                evvmID: this.evvmID
             });
 
-            // Call publicStaking
+            // Call publicStaking - amount must be integer (staking tokens)
             const tx = await this.stakingContract.publicStaking(
                 this.account,           // user
                 true,                   // isStaking
-                amountBN,               // amountOfStaking (in staking tokens, as BigNumber)
+                amountForContract,      // amountOfStaking (must be integer, in staking tokens)
                 stakingNonce,           // nonce
                 stakingSignature,       // signature
                 0,                      // priorityFee_EVVM
@@ -409,13 +431,18 @@ class Web3Integration {
                 false           // sync
             );
 
-            // Convert amount to BigNumber (staking tokens, not wei)
-            const amountBN = ethers.BigNumber.from(Math.floor(parseFloat(amount) * 1000000).toString()).div(1000000);
+            // Convert amount to integer (staking tokens must be whole numbers)
+            const amountNum = parseFloat(amount);
+            const amountForContract = Math.floor(amountNum);
+            
+            if (amountForContract <= 0) {
+                throw new Error('Unstaking amount must be at least 1 staking token');
+            }
             
             const tx = await this.stakingContract.publicStaking(
                 this.account,
                 false, // isStaking
-                amountBN, // amountOfStaking (in staking tokens, as BigNumber)
+                amountForContract, // amountOfStaking (must be integer, in staking tokens)
                 stakingNonce,
                 stakingSignature,
                 0,      // priorityFee_EVVM (optional for unstaking)
