@@ -144,11 +144,48 @@ class LandingPage {
     }
 
     setupStakingButtons() {
+        // Get buttons
+        const stakeBtn = document.getElementById('stakeBtnFull');
+        const unstakeBtn = document.getElementById('unstakeBtnFull');
+        
+        if (!stakeBtn) {
+            console.error('❌ Stake button not found!');
+            return;
+        }
+        
+        if (!unstakeBtn) {
+            console.error('❌ Unstake button not found!');
+            return;
+        }
+        
+        // Remove any existing listeners by cloning
+        const newStakeBtn = stakeBtn.cloneNode(true);
+        stakeBtn.parentNode.replaceChild(newStakeBtn, stakeBtn);
+        
+        const newUnstakeBtn = unstakeBtn.cloneNode(true);
+        unstakeBtn.parentNode.replaceChild(newUnstakeBtn, unstakeBtn);
+        
+        console.log('✅ Setting up staking buttons...');
+        
         // Stake button - now accepts HGM amount
-        document.getElementById('stakeBtnFull').addEventListener('click', async () => {
+        newStakeBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 Stake button clicked!');
+            
+            const stakeBtnEl = newStakeBtn; // Use the cloned button
+            if (stakeBtnEl) {
+                stakeBtnEl.disabled = true;
+                stakeBtnEl.textContent = 'Processing...';
+            }
+            
             const hgmAmount = document.getElementById('stakeAmountFull').value;
             if (!hgmAmount || parseFloat(hgmAmount) <= 0) {
                 this.showMessage('Please enter a valid HGM amount to stake', 'error');
+                if (stakeBtnEl) {
+                    stakeBtnEl.disabled = false;
+                    stakeBtnEl.textContent = 'Stake Tokens';
+                }
                 return;
             }
 
@@ -157,6 +194,10 @@ class LandingPage {
                 const balance = parseFloat(this.stakingData?.balance || 0);
                 if (parseFloat(hgmAmount) > balance) {
                     this.showMessage(`Insufficient balance. You have ${balance.toFixed(4)} HGM`, 'error');
+                    if (stakeBtnEl) {
+                        stakeBtnEl.disabled = false;
+                        stakeBtnEl.textContent = 'Stake Tokens';
+                    }
                     return;
                 }
 
@@ -173,22 +214,40 @@ class LandingPage {
                     } else if (status === 'confirmed') {
                         this.showMessage('Staking successful!', 'success');
                         document.getElementById('stakeAmountFull').value = '';
+                        if (stakeBtnEl) {
+                            stakeBtnEl.disabled = false;
+                            stakeBtnEl.textContent = 'Stake Tokens';
+                        }
                         this.refreshStakingData();
                     } else if (status === 'failed') {
                         this.showMessage('Transaction failed. Please try again.', 'error');
+                        if (stakeBtnEl) {
+                            stakeBtnEl.disabled = false;
+                            stakeBtnEl.textContent = 'Stake Tokens';
+                        }
                     }
                 });
-                
-                document.getElementById('stakeAmountFull').value = '';
-                await this.refreshStakingData();
             } catch (error) {
                 console.error('Staking error:', error);
                 this.showMessage(`Staking failed: ${error.message}`, 'error');
+                if (stakeBtnEl) {
+                    stakeBtnEl.disabled = false;
+                    stakeBtnEl.textContent = 'Stake Tokens';
+                }
             }
         });
 
         // Unstake button
-        document.getElementById('unstakeBtnFull').addEventListener('click', async () => {
+        newUnstakeBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔘 Unstake button clicked!');
+            
+            const unstakeBtnEl = newUnstakeBtn; // Use the cloned button
+            if (unstakeBtnEl) {
+                unstakeBtnEl.disabled = true;
+                unstakeBtnEl.textContent = 'Processing...';
+            }
             const amount = document.getElementById('unstakeAmountFull').value;
             if (!amount || parseFloat(amount) < 1) {
                 this.showMessage('Please enter a valid unstaking amount', 'error');
@@ -214,16 +273,26 @@ class LandingPage {
                     } else if (status === 'confirmed') {
                         this.showMessage('Unstaking successful!', 'success');
                         document.getElementById('unstakeAmountFull').value = '';
+                        if (unstakeBtnEl) {
+                            unstakeBtnEl.disabled = false;
+                            unstakeBtnEl.textContent = 'Unstake Tokens';
+                        }
                         this.refreshStakingData();
                     } else if (status === 'failed') {
                         this.showMessage('Transaction failed. Please try again.', 'error');
+                        if (unstakeBtnEl) {
+                            unstakeBtnEl.disabled = false;
+                            unstakeBtnEl.textContent = 'Unstake Tokens';
+                        }
                     }
                 });
-                
-                document.getElementById('unstakeAmountFull').value = '';
-                await this.refreshStakingData();
             } catch (error) {
+                console.error('Unstaking error:', error);
                 this.showMessage(`Unstaking failed: ${error.message}`, 'error');
+                if (unstakeBtnEl) {
+                    unstakeBtnEl.disabled = false;
+                    unstakeBtnEl.textContent = 'Unstake Tokens';
+                }
             }
         });
 
