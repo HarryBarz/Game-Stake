@@ -22,36 +22,36 @@ class LandingPage {
         // Setup start game button - changes behavior based on staking status
         const startGameBtn = document.getElementById('startGameBtn');
         if (startGameBtn) {
-            console.log('✅ Start game button found, attaching click handler');
+            console.log(' Start game button found, attaching click handler');
             startGameBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                console.log('🎮 Start game button clicked!');
+                console.log(' Start game button clicked!');
                 
                 // Check current staking status
                 if (this.web3 && this.web3.account) {
                     try {
-                        console.log('📊 Checking staking status...');
+                        console.log(' Checking staking status...');
                         const info = await this.web3.getCompleteStakingInfo();
-                        console.log('📊 Staking info:', info);
+                        console.log(' Staking info:', info);
                         
                         if (info && info.canPlay) {
                             // Can play - start the game
-                            console.log('✅ Can play - starting game');
+                            console.log(' Can play - starting game');
                             this.startGame();
                         } else {
                             // Can't play - scroll to staking form
-                            console.log('⚠️ Cannot play - scrolling to staking form');
+                            console.log(' Cannot play - scrolling to staking form');
                             this.showMessage('Please stake tokens first to unlock the game!', 'info');
                             const stakeInput = document.getElementById('stakeAmountFull');
                             if (stakeInput) {
                                 stakeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                 setTimeout(() => stakeInput.focus(), 500);
                             } else {
-                                console.error('❌ Stake input not found!');
+                                console.error(' Stake input not found!');
                             }
                         }
                     } catch (error) {
-                        console.error('❌ Error checking play status:', error);
+                        console.error(' Error checking play status:', error);
                         // If error, just scroll to staking form
                         this.showMessage('Error checking staking status. Please try staking first.', 'error');
                         const stakeInput = document.getElementById('stakeAmountFull');
@@ -61,7 +61,7 @@ class LandingPage {
                     }
                 } else {
                     // Not connected - connect wallet first
-                    console.log('⚠️ Wallet not connected');
+                    console.log(' Wallet not connected');
                     this.showMessage('Please connect your wallet first!', 'error');
                     // Try to trigger wallet connection
                     const connectBtn = document.getElementById('connectWalletLanding');
@@ -71,7 +71,7 @@ class LandingPage {
                 }
             });
         } else {
-            console.error('❌ Start game button not found in DOM!');
+            console.error(' Start game button not found in DOM!');
         }
 
         // Check if already connected
@@ -110,7 +110,7 @@ class LandingPage {
             console.error('Connection error:', error);
             alert('Failed to connect wallet: ' + error.message);
             connectBtn.disabled = false;
-            connectBtn.textContent = '🔗 Connect Wallet';
+            connectBtn.textContent = ' Connect Wallet';
         }
     }
 
@@ -149,12 +149,12 @@ class LandingPage {
         const unstakeBtn = document.getElementById('unstakeBtnFull');
         
         if (!stakeBtn) {
-            console.error('❌ Stake button not found!');
+            console.error(' Stake button not found!');
             return;
         }
         
         if (!unstakeBtn) {
-            console.error('❌ Unstake button not found!');
+            console.error(' Unstake button not found!');
             return;
         }
         
@@ -165,13 +165,13 @@ class LandingPage {
         const newUnstakeBtn = unstakeBtn.cloneNode(true);
         unstakeBtn.parentNode.replaceChild(newUnstakeBtn, unstakeBtn);
         
-        console.log('✅ Setting up staking buttons...');
+        console.log(' Setting up staking buttons...');
         
         // Stake button - now accepts HGM amount
         newStakeBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔘 Stake button clicked!');
+            console.log(' Stake button clicked!');
             
             const stakeBtnEl = newStakeBtn; // Use the cloned button
             if (stakeBtnEl) {
@@ -241,7 +241,7 @@ class LandingPage {
         newUnstakeBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🔘 Unstake button clicked!');
+            console.log(' Unstake button clicked!');
             
             const unstakeBtnEl = newUnstakeBtn; // Use the cloned button
             if (unstakeBtnEl) {
@@ -327,13 +327,13 @@ class LandingPage {
                 this.showMessage('Successfully received 10,000 HGM test tokens!', 'success');
                 
                 btn.disabled = false;
-                btn.textContent = '💧 Get Test HGM';
+                btn.textContent = ' Get Test HGM';
                 
                 await this.refreshStakingData();
             } catch (error) {
                 const btn = document.getElementById('getHGMBtn');
                 btn.disabled = false;
-                btn.textContent = '💧 Get Test HGM';
+                btn.textContent = ' Get Test HGM';
                 this.showMessage(`Failed to get HGM: ${error.message}`, 'error');
             }
         });
@@ -409,10 +409,10 @@ class LandingPage {
             const unlockInfo = document.getElementById('unlockInfoFull');
             if (unlockInfo) {
                 if (!info.unlockTimes.canStake && info.unlockTimes.stakeUnlockDate) {
-                    unlockInfo.innerHTML = `<small>⏱️ Can stake again: ${info.unlockTimes.stakeUnlockDate.toLocaleString()}</small>`;
+                    unlockInfo.innerHTML = `<small>⏱ Can stake again: ${info.unlockTimes.stakeUnlockDate.toLocaleString()}</small>`;
                     unlockInfo.style.display = 'block';
                 } else if (!info.unlockTimes.canUnstake && info.unlockTimes.fullUnstakeUnlockDate) {
-                    unlockInfo.innerHTML = `<small>⏱️ Full unstake available: ${info.unlockTimes.fullUnstakeUnlockDate.toLocaleString()}</small>`;
+                    unlockInfo.innerHTML = `<small>⏱ Full unstake available: ${info.unlockTimes.fullUnstakeUnlockDate.toLocaleString()}</small>`;
                     unlockInfo.style.display = 'block';
                 } else {
                     unlockInfo.style.display = 'none';
@@ -450,7 +450,7 @@ class LandingPage {
                 unstakeBtn.title = 'Click to unstake tokens';
             }
             
-            console.log('🔘 Button states:', {
+            console.log(' Button states:', {
                 stakeEnabled: canStakeNow,
                 unstakeEnabled: !unstakeBtn.disabled,
                 publicStakingEnabled: info.enabled,
@@ -464,11 +464,11 @@ class LandingPage {
                 // Never disable - it should either start game or scroll to staking
                 playBtn.disabled = false;
                 if (info.canPlay) {
-                    playBtn.textContent = '🎮 Play Game';
+                    playBtn.textContent = ' Play Game';
                     playBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
                     playBtn.style.cursor = 'pointer';
                 } else {
-                    playBtn.textContent = '💰 Stake to Play';
+                    playBtn.textContent = ' Stake to Play';
                     playBtn.style.background = 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)';
                     playBtn.style.cursor = 'pointer';
                 }
@@ -508,14 +508,14 @@ class LandingPage {
         // Initialize game if not already initialized
         if (!window.game && window.gameCanvas && window.gameResources) {
             window.game = new Game(window.gameCanvas, window.gameResources);
-            console.log('✅ Game started!');
+            console.log(' Game started!');
         } else if (!window.game) {
             // Wait for resources to load
             const checkInterval = setInterval(() => {
                 if (window.gameCanvas && window.gameResources) {
                     window.game = new Game(window.gameCanvas, window.gameResources);
                     clearInterval(checkInterval);
-                    console.log('✅ Game started (delayed)!');
+                    console.log(' Game started (delayed)!');
                 }
             }, 100);
         }

@@ -1,45 +1,45 @@
 /**
- * Created by Asim on 4/20/2017.
- */
-function Resources(){
+*CreatedbyAsimon4/20/2017.
+*/
+functionResources(){
 
-    var _this;
+var_this;
 
-    this._init = function () {
+this._init=function(){
 
-        _this = this;
-        this.images = [];
-        this.audios = [];
-        this.imageLoadedCount = 0;
-        this.audioLoadedCount = 0;
-    };
+_this=this;
+this.images=[];
+this.audios=[];
+this.imageLoadedCount=0;
+this.audioLoadedCount=0;
+};
 
-    this.addImage = function (name, src) {
+this.addImage=function(name,src){
 
-        var image = new Image();
-        image.onload = function () {
+varimage=newImage();
+image.onload=function(){
 
-            _this.imageLoadedCount += 1;
-        };
-        image.src = src;
-        _this.images[name] = image;
-    };
+_this.imageLoadedCount+=1;
+};
+image.src=src;
+_this.images[name]=image;
+};
 
-    this.getImage = function (name) {
+this.getImage=function(name){
 
-        return _this.images[name];
-    };
+return_this.images[name];
+};
 
-    this.addAudio = function (name, src) {
+this.addAudio=function(name,src){
 
-        var audio = new Audio(src);
-        _this.audios[name] = audio;
-    };
+varaudio=newAudio(src);
+_this.audios[name]=audio;
+};
 
-    this.getAudio = function (name) {
+this.getAudio=function(name){
 
-        return _this.audios[name];
-    };
+return_this.audios[name];
+};
 
-    this._init();
+this._init();
 }

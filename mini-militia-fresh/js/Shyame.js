@@ -1,11 +1,11 @@
 /**
- * Created by Asim on 4/6/2017.
- */
-function Shyame(ctx, startPosition, canvas, camera, collisionHandler, resources){
+*CreatedbyAsimon4/6/2017.
+*/
+functionShyame(ctx,startPosition,canvas,camera,collisionHandler,resources){
 
-    this._init = function () {
-        this.actor = new Actor(ctx, startPosition, canvas, camera, collisionHandler, resources);
-    };
+this._init=function(){
+this.actor=newActor(ctx,startPosition,canvas,camera,collisionHandler,resources);
+};
 
-    this._init();
+this._init();
 }

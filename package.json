@@ -1,7 +1,7 @@
 {
-  "name": "mini-militia-evvm",
+  "name": "stakearena",
   "version": "1.0.0",
-  "description": "Mini Militia game with EVVM staking integration",
+  "description": "StakeArena - Survival game with EVVM staking integration",
   "type": "module",
   "scripts": {
     "dev": "vite",

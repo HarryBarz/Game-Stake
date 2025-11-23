@@ -44,7 +44,7 @@ function copyDir(src, dest) {
   }
 }
 
-console.log('📦 Building for production...');
+console.log('Building for production...');
 console.log(`Source: ${srcDir}`);
 console.log(`Destination: ${destDir}`);
 
@@ -55,7 +55,7 @@ try {
     throw new Error(`Source is not a directory: ${srcDir}`);
   }
 } catch (e) {
-  console.error(`❌ Source directory not found: ${srcDir}`);
+  console.error(`Source directory not found: ${srcDir}`);
   process.exit(1);
 }
 
@@ -63,7 +63,7 @@ try {
 try {
   copyDir(srcDir, destDir);
 } catch (e) {
-  console.error('❌ Build failed:', e);
+  console.error('Build failed:', e);
   process.exit(1);
 }
 
@@ -71,16 +71,16 @@ try {
 try {
   const files = readdirSync(destDir);
   if (files.length === 0) {
-    console.error('❌ Build output is empty!');
+    console.error('Build output is empty!');
     process.exit(1);
   }
-  console.log(`✅ Copied ${files.length} items to dist/`);
+  console.log(`Copied ${files.length} items to dist/`);
   console.log(`   Files: ${files.slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}`);
 } catch (e) {
-  console.error('❌ Failed to verify build output:', e);
+  console.error('Failed to verify build output:', e);
   process.exit(1);
 }
 
-console.log('✅ Build complete!');
+console.log('Build complete!');
 console.log(`Output: ${destDir}`);
 

@@ -1,14 +1,14 @@
-# Mini Militia - EVVM Staking Game
+# StakeArena
 
 A web-based survival game integrated with EVVM staking on Arbitrum Sepolia testnet.
 
 ## Features
 
-- 🎮 **Mini Militia Survival Game** - Classic side-scrolling shooter
-- 💰 **EVVM Staking Integration** - Stake HGM tokens to unlock game bonuses
-- 🔗 **Web3 Wallet Support** - Connect with MetaMask
-- 🎯 **Staking Bonuses** - Score multipliers, faster respawn, health boosts
-- 📊 **Full Staking UI** - Stake, unstake, and claim rewards
+- **Survival Game** - Classic side-scrolling shooter
+- **EVVM Staking Integration** - Stake HGM tokens to unlock game bonuses
+- **Web3 Wallet Support** - Connect with MetaMask
+- **Staking Bonuses** - Score multipliers, faster respawn, health boosts
+- **Full Staking UI** - Stake, unstake, and claim rewards
 
 ## Tech Stack
 
@@ -78,4 +78,3 @@ Then open `http://localhost:8080` in your browser.
 ## License
 
 EVVM Noncommercial License v1.0
-

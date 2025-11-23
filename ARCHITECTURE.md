@@ -1,6 +1,6 @@
-# 🎮 Complete Game Architecture & User Flow
+#  StakeArena Architecture & User Flow
 
-## 🧱 **LAYER 1 — SYSTEM ARCHITECTURE OVERVIEW**
+##  **LAYER 1 — SYSTEM ARCHITECTURE OVERVIEW**
 
 ```
 ┌────────────────────────────┐
@@ -62,7 +62,7 @@
 
 ---
 
-## 🔗 **LAYER 2 — USER FLOW (ABSOLUTE FULL LIFECYCLE)**
+##  **LAYER 2 — USER FLOW (ABSOLUTE FULL LIFECYCLE)**
 
 ### **FLOW 0 — User Arrives on Website**
 
@@ -346,7 +346,7 @@ Indexer updates DB.
 
 ---
 
-## 🧭 **LAYER 3 — FULL DEVELOPER FLOW (BACKEND + INDEXER)**
+##  **LAYER 3 — FULL DEVELOPER FLOW (BACKEND + INDEXER)**
 
 ### 🔄 **1) INDEXER**
 
@@ -380,7 +380,7 @@ Handles:
 
 ---
 
-### 🎮 **3) GAME SERVER**
+###  **3) GAME SERVER**
 
 Real-time authoritative server:
 
@@ -404,7 +404,7 @@ Real-time authoritative server:
 
 ---
 
-## 🚀 **END-TO-END USER STORY (HUMAN VERSION)**
+##  **END-TO-END USER STORY (HUMAN VERSION)**
 
 A user comes to your website.
 
@@ -426,21 +426,21 @@ Everything is verifiable, secure, and smooth.
 
 ## 📋 **Implementation Status**
 
-### ✅ Completed
+###  Completed
 - [x] Frontend wallet connection (MetaMask)
 - [x] Staking contract integration
 - [x] EVVM signature generation
 - [x] Staking UI
 - [x] Basic game integration
 
-### 🚧 In Progress
+###  In Progress
 - [ ] Backend API (auth, entitlements, game tokens)
 - [ ] Database schema
 - [ ] Indexer for onchain events
 - [ ] Game server with perk enforcement
 - [ ] Session management
 
-### 📝 TODO
+###  TODO
 - [ ] Deposit/Withdraw vault
 - [ ] Reward distribution system
 - [ ] Matchmaking system
@@ -449,7 +449,7 @@ Everything is verifiable, secure, and smooth.
 
 ---
 
-## 🔧 **Technical Stack**
+##  **Technical Stack**
 
 ### Frontend
 - HTML5 Canvas
@@ -475,7 +475,7 @@ Everything is verifiable, secure, and smooth.
 
 ---
 
-## 📚 **Next Steps**
+##  **Next Steps**
 
 1. **Backend API Implementation**
    - Auth endpoints (`/auth/nonce`, `/auth/login`)

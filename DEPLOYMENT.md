@@ -1,13 +1,13 @@
 # Auto-Deployment Setup Guide
 
-## ✅ What's Configured
+## What's Configured
 
 1. **Vite Build System**: Modern, fast build tool with hot reloading
 2. **Vercel Auto-Deploy**: When you push to GitHub, Vercel automatically builds and deploys
 3. **Auto-Push Script**: Easy script to commit and push changes
 4. **Dynamic Development**: Hot module replacement for instant updates
 
-## 🚀 Development (Local)
+## Development (Local)
 
 ### Start Development Server (with hot reloading)
 
@@ -16,11 +16,11 @@ npm run dev
 ```
 
 This will:
-- ✅ Start Vite dev server on http://localhost:8080
-- ✅ Enable hot module replacement (instant updates)
-- ✅ Auto-reload on file changes
+- Start Vite dev server on http://localhost:8080
+- Enable hot module replacement (instant updates)
+- Auto-reload on file changes
 
-## 🚀 Quick Deploy
+## Quick Deploy
 
 ### Option 1: Use the Auto-Push Script (Recommended)
 
@@ -29,10 +29,10 @@ This will:
 ```
 
 This will:
-- ✅ Add all changes
-- ✅ Commit with your message
-- ✅ Push to GitHub
-- ✅ Vercel auto-builds and deploys
+- Add all changes
+- Commit with your message
+- Push to GitHub
+- Vercel auto-builds and deploys
 
 ### Option 2: Manual Git Commands
 
@@ -44,7 +44,7 @@ git push origin main
 
 Vercel will automatically build and deploy after the push!
 
-## 🔧 Setup Vercel GitHub Integration
+## Setup Vercel GitHub Integration
 
 1. **In Vercel Dashboard:**
    - Go to your project settings
@@ -54,13 +54,13 @@ Vercel will automatically build and deploy after the push!
 
 2. **That's it!** Every push to `main` branch will auto-deploy.
 
-## 📝 Workflow
+## Workflow
 
 ```
 Make Changes → Run ./auto-push.sh → GitHub → Vercel Auto-Deploys
 ```
 
-## 🎯 Example
+## Example
 
 ```bash
 # Make your changes to files
@@ -71,7 +71,7 @@ Make Changes → Run ./auto-push.sh → GitHub → Vercel Auto-Deploys
 # Check: https://your-project.vercel.app
 ```
 
-## ⚙️ Advanced: Enable Auto-Push Hook
+## Advanced: Enable Auto-Push Hook
 
 If you want EVERY commit to auto-push:
 
@@ -80,4 +80,3 @@ If you want EVERY commit to auto-push:
 3. Now every `git commit` will auto-push!
 
 **Note**: This can be annoying if you commit frequently. Use the script instead.
-

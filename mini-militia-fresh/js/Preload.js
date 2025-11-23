@@ -1,77 +1,77 @@
 /**
- * Created by Asim on 4/20/2017.
- */
-function Preload(){
+*CreatedbyAsimon4/20/2017.
+*/
+functionPreload(){
 
-    var _this;
-    this._init = function () {
+var_this;
+this._init=function(){
 
-        _this = this;
-        this.canvasWrapper = document.getElementsByClassName('wrapper')[0];
-        this.canvas = document.getElementById('canvas');
-        this.ctx = this.canvas.getContext('2d');
+_this=this;
+this.canvasWrapper=document.getElementsByClassName('wrapper')[0];
+this.canvas=document.getElementById('canvas');
+this.ctx=this.canvas.getContext('2d');
 
-        this.splashImage = new Image();
-        this.splashImage.src = 'images/splash.png';
+this.splashImage=newImage();
+this.splashImage.src='images/splash.png';
 
-        this.splashImage.onload = function () {
+this.splashImage.onload=function(){
 
-            _this.ctx.drawImage(_this.splashImage, 0, 0, _this.canvasWrapper.clientWidth, _this.canvasWrapper.clientHeight);
-        };
-
-        this.splashAudio = new Audio('audio/splash.aac');
-        this.splashAudio.play();
-
-        this.resources = new Resources();
-
-        this.resources.addImage('character_sprite1_left', 'images/character/character_sprite1_left.png');
-        this.resources.addImage('character_sprite1_right', 'images/character/character_sprite1_right.png');
-
-        this.resources.addImage('Enemy-1-left', 'images/character/Enemy-1-left.png');
-        this.resources.addImage('Enemy-1-right', 'images/character/Enemy-1-right.png');
-
-        this.resources.addImage('hand_with_gun', 'images/hand_with_gun.png');
-        this.resources.addImage('hand_with_gun_left', 'images/hand_with_gun_left.png');
-        this.resources.addImage('enemy_gun', 'images/enemy_gun.PNG');
-        this.resources.addImage('enemy_gun_left', 'images/enemy_gun_left.PNG');
-
-        this.resources.addAudio('intro', 'audio/intro.mp3');
-        this.resources.addAudio('background_music', 'audio/background_music.mp3');
-        this.resources.addAudio('gun_shot', 'audio/gun_shot.mp3');
-
-        this.preloadInterval = setInterval(function () {
-            if(_this.resources.imageLoadedCount == Object.size(_this.resources.images)) {
-                _this.splashAudio.pause();
-                delete _this.splashAudio;
-                clearInterval(_this.preloadInterval);
-                
-                // Don't auto-start game - wait for user to click "Start Game"
-                // Store resources for later use
-                window.gameResources = _this.resources;
-                window.gameCanvas = _this.canvas;
-                
-                // Only create game if game container is visible
-                if (document.getElementById('gameContainer').style.display !== 'none') {
-                    window.game = new Game(_this.canvas, _this.resources);
-                }
-            }else{
-                // console.log('here');
-            }
-        }, 5000);
-    }
-
-    this._init();
-}
-
-Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-        if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
+_this.ctx.drawImage(_this.splashImage,0,0,_this.canvasWrapper.clientWidth,_this.canvasWrapper.clientHeight);
 };
 
-window.onload = function () {
+this.splashAudio=newAudio('audio/splash.aac');
+this.splashAudio.play();
 
-    new Preload();
+this.resources=newResources();
+
+this.resources.addImage('character_sprite1_left','images/character/character_sprite1_left.png');
+this.resources.addImage('character_sprite1_right','images/character/character_sprite1_right.png');
+
+this.resources.addImage('Enemy-1-left','images/character/Enemy-1-left.png');
+this.resources.addImage('Enemy-1-right','images/character/Enemy-1-right.png');
+
+this.resources.addImage('hand_with_gun','images/hand_with_gun.png');
+this.resources.addImage('hand_with_gun_left','images/hand_with_gun_left.png');
+this.resources.addImage('enemy_gun','images/enemy_gun.PNG');
+this.resources.addImage('enemy_gun_left','images/enemy_gun_left.PNG');
+
+this.resources.addAudio('intro','audio/intro.mp3');
+this.resources.addAudio('background_music','audio/background_music.mp3');
+this.resources.addAudio('gun_shot','audio/gun_shot.mp3');
+
+this.preloadInterval=setInterval(function(){
+if(_this.resources.imageLoadedCount==Object.size(_this.resources.images)){
+_this.splashAudio.pause();
+delete_this.splashAudio;
+clearInterval(_this.preloadInterval);
+
+//Don'tauto-startgame-waitforusertoclick"StartGame"
+//Storeresourcesforlateruse
+window.gameResources=_this.resources;
+window.gameCanvas=_this.canvas;
+
+//Onlycreategameifgamecontainerisvisible
+if(document.getElementById('gameContainer').style.display!=='none'){
+window.game=newGame(_this.canvas,_this.resources);
+}
+}else{
+//console.log('here');
+}
+},5000);
+}
+
+this._init();
+}
+
+Object.size=function(obj){
+varsize=0,key;
+for(keyinobj){
+if(obj.hasOwnProperty(key))size++;
+}
+returnsize;
+};
+
+window.onload=function(){
+
+newPreload();
 }

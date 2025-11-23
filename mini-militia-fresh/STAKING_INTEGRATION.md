@@ -1,10 +1,10 @@
 # EVVM Staking Integration Guide
 
-## 🎮 Overview
+## Overview
 
-Your Mini Militia game is now fully integrated with EVVM staking! Players can stake HGM tokens to earn rewards and get in-game bonuses.
+StakeArena is now fully integrated with EVVM staking! Players can stake HGM tokens to earn rewards and get in-game bonuses.
 
-## ✅ What's Included
+## What's Included
 
 ### 1. **Web3 Integration** (`js/Web3Integration.js`)
 - Wallet connection (MetaMask)
@@ -31,7 +31,7 @@ Your Mini Militia game is now fully integrated with EVVM staking! Players can st
 - Responsive design
 - Modern UI/UX
 
-## 🔧 Setup Instructions
+## Setup Instructions
 
 ### Step 1: Get Your EVVM ID
 
@@ -62,11 +62,11 @@ Make sure public staking is enabled on your Staking contract. If not, you'll nee
 2. Wait 24 hours
 3. Call `confirmChangeAllowPublicStaking()`
 
-## 🎯 How It Works
+## How It Works
 
 ### For Players:
 
-1. **Connect Wallet**: Click "💰 Staking" button → Connect MetaMask
+1. **Connect Wallet**: Click "Staking" button → Connect MetaMask
 2. **Stake Tokens**: Enter amount → Click "Stake Tokens"
 3. **Get Bonuses**: 
    - 1-10 tokens: 10% score bonus
@@ -81,31 +81,31 @@ Make sure public staking is enabled on your Staking contract. If not, you'll nee
 - **Health Boost**: Extra health on respawn
 - **Visual Feedback**: Bonus indicators in game over screen
 
-## 📋 Features
+## Features
 
 ### Staking Functions:
-- ✅ Connect/Disconnect wallet
-- ✅ View staked amount
-- ✅ View balance
-- ✅ Stake tokens (with signature verification)
-- ✅ Unstake tokens
-- ✅ Claim rewards
-- ✅ View staking history
+- Connect/Disconnect wallet
+- View staked amount
+- View balance
+- Stake tokens (with signature verification)
+- Unstake tokens
+- Claim rewards
+- View staking history
 
 ### Game Integration:
-- ✅ Score multipliers
-- ✅ Respawn bonuses
-- ✅ Health boosts
-- ✅ Visual indicators
+- Score multipliers
+- Respawn bonuses
+- Health boosts
+- Visual indicators
 
-## 🔒 Security
+## Security
 
 - All transactions require EIP-191 signatures
 - Nonce management prevents replay attacks
 - Network validation ensures correct chain
 - Signature verification on-chain
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "MetaMask not detected"
 - Install MetaMask browser extension
@@ -127,14 +127,14 @@ Make sure public staking is enabled on your Staking contract. If not, you'll nee
 - Update the EVVM ID in `Web3Integration.js`
 - Make sure you've registered and set the ID on the contract
 
-## 📝 Important Notes
+## Important Notes
 
 1. **EVVM ID Required**: You MUST set your actual EVVM ID in the code for signatures to work
 2. **Public Staking**: Must be enabled on the Staking contract
 3. **Network**: Currently configured for Arbitrum Sepolia (Chain ID: 421614)
 4. **Gas Fees**: Users need ETH on Arbitrum Sepolia for transactions
 
-## 🚀 Next Steps
+## Next Steps
 
 1. Set your EVVM ID in the code
 2. Test the integration
@@ -142,13 +142,12 @@ Make sure public staking is enabled on your Staking contract. If not, you'll nee
 4. Deploy to your hosting platform
 5. Share with players!
 
-## 📚 Documentation
+## Documentation
 
 - EVVM Staking Docs: https://www.evvm.info/docs/Staking/Introduction
 - Contract Addresses: Check your deployment broadcast files
 - EVVM ID: From Registry registration transaction
 
-## 🎉 Enjoy!
+## Enjoy!
 
 Your game now has full EVVM staking integration. Players can stake, earn rewards, and get in-game bonuses!
-

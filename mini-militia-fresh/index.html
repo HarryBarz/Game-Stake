@@ -1,6 +1,6 @@
 <html>
 <head>
-    <title>Mini Militia - Survival</title>
+    <title>StakeArena - Survival Game</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,21 +19,21 @@
                 script.onload = function() {
                     if (!loaded) {
                         loaded = true;
-                        console.log('✅ ethers.js loaded from ' + (isFallback ? 'unpkg (fallback)' : 'jsDelivr'));
+                        console.log('ethers.js loaded from ' + (isFallback ? 'unpkg (fallback)' : 'jsDelivr'));
                         // Verify it's ethers v5
                         if (typeof ethers !== 'undefined' && ethers.providers && ethers.providers.Web3Provider) {
-                            console.log('✅ ethers v5 API confirmed');
+                            console.log('ethers v5 API confirmed');
                         } else {
-                            console.error('❌ ethers loaded but wrong version or API missing');
+                            console.error('ethers loaded but wrong version or API missing');
                         }
                     }
                 };
                 script.onerror = function() {
                     if (isFallback) {
-                        console.error('❌ Both CDNs failed to load ethers.js');
+                        console.error('Both CDNs failed to load ethers.js');
                         alert('Failed to load ethers.js library. Please check your internet connection and refresh the page.');
                     } else {
-                        console.log('⚠️ jsDelivr failed, trying unpkg...');
+                        console.log('jsDelivr failed, trying unpkg...');
                         loadEthers('https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js', true);
                     }
                 };
@@ -47,11 +47,11 @@
     <!-- Landing Page -->
     <div id="landingPage">
         <div class="landing-container">
-            <div class="game-logo">🎮 MINI MILITIA</div>
+            <div class="game-logo">STAKEARENA</div>
             <div class="game-subtitle">Survival Mode with EVVM Staking</div>
             <div class="connect-wallet-section">
                 <button id="connectWalletLanding" class="connect-wallet-btn">
-                    🔗 Connect Wallet
+                    Connect Wallet
                 </button>
                 <div class="wallet-status" id="walletStatusLanding" style="display: none;">
                     <div>Connected:</div>
@@ -65,7 +65,7 @@
     <div id="stakingPage">
         <div class="staking-container">
             <div class="staking-header-large">
-                <h1>💰 Staking & Rewards</h1>
+                <h1>Staking & Rewards</h1>
                 <p>Stake tokens to unlock game bonuses and earn rewards</p>
             </div>
 
@@ -79,7 +79,7 @@
                     <h3>Your Balance</h3>
                     <div class="value" id="userBalanceFull">0</div>
                     <div class="label">HGM Tokens</div>
-                    <button id="getHGMBtn" class="action-btn-full" style="margin-top: 15px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 10px; font-size: 14px;">💧 Get Test HGM</button>
+                    <button id="getHGMBtn" class="action-btn-full" style="margin-top: 15px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); padding: 10px; font-size: 14px;">Get Test HGM</button>
                 </div>
                 <div class="staking-card">
                     <h3>Staking Price</h3>
@@ -128,7 +128,7 @@
                 <p style="margin-bottom: 30px; font-size: 18px; opacity: 0.9;">
                     Stake tokens to unlock bonuses: Score multipliers, faster respawn, and health boosts!
                 </p>
-                <button id="startGameBtn" class="start-game-btn">🚀 Start Game</button>
+                <button id="startGameBtn" class="start-game-btn">Start Game</button>
             </div>
         </div>
     </div>
@@ -177,11 +177,11 @@
                     if (typeof ethers !== 'undefined') {
                         // Verify it's ethers v5 with correct API
                         if (ethers.providers && ethers.providers.Web3Provider) {
-                            console.log('✅ ethers.js v5 loaded and verified');
+                            console.log('ethers.js v5 loaded and verified');
                             resolve();
                             return true;
                         } else {
-                            console.error('❌ ethers.js loaded but wrong version (missing providers.Web3Provider)');
+                            console.error('ethers.js loaded but wrong version (missing providers.Web3Provider)');
                             console.log('ethers object:', ethers);
                             reject(new Error('ethers.js v5 API not found. Wrong version loaded.'));
                             return false;
@@ -197,16 +197,16 @@
                 let attempts = 0;
                 const maxAttempts = 100; // 10 seconds
                 
-                console.log('⏳ Waiting for ethers.js to load...');
+                console.log('Waiting for ethers.js to load...');
                 
                 const checkInterval = setInterval(() => {
                     attempts++;
                     if (checkEthers()) {
                         clearInterval(checkInterval);
-                        console.log('✅ ethers.js loaded after ' + (attempts * 100) + 'ms');
+                        console.log('ethers.js loaded after ' + (attempts * 100) + 'ms');
                     } else if (attempts >= maxAttempts) {
                         clearInterval(checkInterval);
-                        console.error('❌ ethers.js failed to load after 10 seconds');
+                        console.error('ethers.js failed to load after 10 seconds');
                         reject(new Error('ethers.js failed to load. The CDN might be blocked or unavailable.'));
                     }
                 }, 100);
@@ -215,25 +215,25 @@
 
         // Initialize landing page
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 DOM loaded, waiting for ethers.js...');
+            console.log('DOM loaded, waiting for ethers.js...');
             
             try {
                 // Wait for ethers to load
                 await waitForEthers();
 
                 // Initialize Web3
-                console.log('🔧 Initializing Web3...');
+                console.log('Initializing Web3...');
                 const web3Integration = new Web3Integration();
                 await web3Integration.init();
                 
                 // Initialize landing page
-                console.log('🎮 Initializing landing page...');
+                console.log('Initializing landing page...');
                 window.landingPage = new LandingPage(web3Integration);
                 window.web3Integration = web3Integration;
                 
-                console.log('✅ Landing page initialized successfully');
+                console.log('Landing page initialized successfully');
             } catch (error) {
-                console.error('❌ Failed to initialize landing page:', error);
+                console.error('Failed to initialize landing page:', error);
                 
                 // Show user-friendly error
                 const errorMsg = error.message || 'Unknown error occurred';

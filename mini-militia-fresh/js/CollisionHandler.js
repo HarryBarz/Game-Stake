@@ -1,79 +1,79 @@
 /**
- * Created by Asim on 4/15/2017.
- */
-function CollisionHandler(ctx, camera, mapArray){
+*CreatedbyAsimon4/15/2017.
+*/
+functionCollisionHandler(ctx,camera,mapArray){
 
-    var _this;
-    this._init = function () {
+var_this;
+this._init=function(){
 
-        _this = this;
-        this.ctx = ctx;
-        this.camera = camera;
-        this.mapArray = mapArray;
-    };
+_this=this;
+this.ctx=ctx;
+this.camera=camera;
+this.mapArray=mapArray;
+};
 
-    this.hasReachedGround = function (actor) {
+this.hasReachedGround=function(actor){
 
-        var y = Math.round((actor.position.y + actor.actorHeight) / TILE_SIZE) - 1;
-        var x = Math.round((actor.position.x + actor.actorWidth) / TILE_SIZE) - 2;
+vary=Math.round((actor.position.y+actor.actorHeight)/TILE_SIZE)-1;
+varx=Math.round((actor.position.x+actor.actorWidth)/TILE_SIZE)-2;
 
-        if (_this.mapArray[y] !== undefined){
-            if (_this.mapArray[y][x] !== undefined) {
-                if(_this.mapArray[y][x].tileType == 1){
-                    return true;
-                }
-            }
-            if(_this.mapArray[y][x] !== undefined){
-                if(_this.mapArray[y][x].tileType == 4) {
-                    return true;
-                }
-            }
-        }
+if(_this.mapArray[y]!==undefined){
+if(_this.mapArray[y][x]!==undefined){
+if(_this.mapArray[y][x].tileType==1){
+returntrue;
+}
+}
+if(_this.mapArray[y][x]!==undefined){
+if(_this.mapArray[y][x].tileType==4){
+returntrue;
+}
+}
+}
 
-        return false;
-    };
+returnfalse;
+};
 
-    this.pushingAgainstWall = function (actor, direction) {
+this.pushingAgainstWall=function(actor,direction){
 
-        var fromY = Math.round((actor.position.y) / TILE_SIZE) - 1;
-        var x;
-        if(direction == 'D')
-            x = Math.round((actor.position.x + actor.actorWidth) / TILE_SIZE);
-        else if(direction == 'A')
-            x = Math.round(actor.position.x / TILE_SIZE);
-        x = x - 3;
-        var toY = Math.round((actor.position.y + actor.actorHeight) / TILE_SIZE) - 1;
+varfromY=Math.round((actor.position.y)/TILE_SIZE)-1;
+varx;
+if(direction=='D')
+x=Math.round((actor.position.x+actor.actorWidth)/TILE_SIZE);
+elseif(direction=='A')
+x=Math.round(actor.position.x/TILE_SIZE);
+x=x-3;
+vartoY=Math.round((actor.position.y+actor.actorHeight)/TILE_SIZE)-1;
 
-        for(var i = fromY; i < toY; i++) {
-            if (_this.mapArray[i] !== undefined) {
-                if (_this.mapArray[i][x] !== undefined) {
-                    if(_this.mapArray[i][x].tileType == 1 || _this.mapArray[i][x].tileType == 2 || _this.mapArray[i][x].tileType == 4) {
-                        return true;
-                    }
-                    if(_this.mapArray[i][x + 2] !== undefined)
-                        if(_this.mapArray[i][x + 2].tileType == 3 || _this.mapArray[i][x + 2].tileType == 5)
-                            return true;
-                }
-            }
-        }
+for(vari=fromY;i<toY;i++){
+if(_this.mapArray[i]!==undefined){
+if(_this.mapArray[i][x]!==undefined){
+if(_this.mapArray[i][x].tileType==1||_this.mapArray[i][x].tileType==2||_this.mapArray[i][x].tileType==4){
+returntrue;
+}
+if(_this.mapArray[i][x+2]!==undefined)
+if(_this.mapArray[i][x+2].tileType==3||_this.mapArray[i][x+2].tileType==5)
+returntrue;
+}
+}
+}
 
-        return false;
-    };
+returnfalse;
+};
 
-    this.objectIsOutBound = function (position) {
+this.objectIsOutBound=function(position){
 
-        var y = Math.round(position.y / TILE_SIZE);
-        var x = Math.round(position.x / TILE_SIZE);
+vary=Math.round(position.y/TILE_SIZE);
+varx=Math.round(position.x/TILE_SIZE);
 
-        if (_this.mapArray[y] !== undefined) {
-            if (_this.mapArray[y][x] !== undefined) {
-                if(_this.mapArray[y][x].tileType == 1 || _this.mapArray[y][x].tileType == 4 || _this.mapArray[y][x].tileType == 2) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    };
+if(_this.mapArray[y]!==undefined){
+if(_this.mapArray[y][x]!==undefined){
+if(_this.mapArray[y][x].tileType==1||_this.mapArray[y][x].tileType==4||_this.mapArray[y][x].tileType==2){
+returntrue;
+}
+}
+}
+returnfalse;
+};
 
-    this._init();
+this._init();
 }
