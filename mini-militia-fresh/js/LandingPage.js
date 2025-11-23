@@ -19,9 +19,60 @@ class LandingPage {
         const connectBtn = document.getElementById('connectWalletLanding');
         connectBtn.addEventListener('click', () => this.connectWallet());
 
-        // Setup start game button
+        // Setup start game button - changes behavior based on staking status
         const startGameBtn = document.getElementById('startGameBtn');
-        startGameBtn.addEventListener('click', () => this.startGame());
+        if (startGameBtn) {
+            console.log('✅ Start game button found, attaching click handler');
+            startGameBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                console.log('🎮 Start game button clicked!');
+                
+                // Check current staking status
+                if (this.web3 && this.web3.account) {
+                    try {
+                        console.log('📊 Checking staking status...');
+                        const info = await this.web3.getCompleteStakingInfo();
+                        console.log('📊 Staking info:', info);
+                        
+                        if (info && info.canPlay) {
+                            // Can play - start the game
+                            console.log('✅ Can play - starting game');
+                            this.startGame();
+                        } else {
+                            // Can't play - scroll to staking form
+                            console.log('⚠️ Cannot play - scrolling to staking form');
+                            this.showMessage('Please stake tokens first to unlock the game!', 'info');
+                            const stakeInput = document.getElementById('stakeAmountFull');
+                            if (stakeInput) {
+                                stakeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                setTimeout(() => stakeInput.focus(), 500);
+                            } else {
+                                console.error('❌ Stake input not found!');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Error checking play status:', error);
+                        // If error, just scroll to staking form
+                        this.showMessage('Error checking staking status. Please try staking first.', 'error');
+                        const stakeInput = document.getElementById('stakeAmountFull');
+                        if (stakeInput) {
+                            stakeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                } else {
+                    // Not connected - connect wallet first
+                    console.log('⚠️ Wallet not connected');
+                    this.showMessage('Please connect your wallet first!', 'error');
+                    // Try to trigger wallet connection
+                    const connectBtn = document.getElementById('connectWalletLanding');
+                    if (connectBtn) {
+                        connectBtn.click();
+                    }
+                }
+            });
+        } else {
+            console.error('❌ Start game button not found in DOM!');
+        }
 
         // Check if already connected
         if (this.web3 && this.web3.account) {
@@ -299,11 +350,16 @@ class LandingPage {
             // Update play button if it exists
             const playBtn = document.getElementById('startGameBtn');
             if (playBtn) {
-                playBtn.disabled = !info.canPlay;
+                // Never disable - it should either start game or scroll to staking
+                playBtn.disabled = false;
                 if (info.canPlay) {
                     playBtn.textContent = '🎮 Play Game';
+                    playBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                    playBtn.style.cursor = 'pointer';
                 } else {
-                    playBtn.textContent = '🔒 Stake to Play';
+                    playBtn.textContent = '💰 Stake to Play';
+                    playBtn.style.background = 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)';
+                    playBtn.style.cursor = 'pointer';
                 }
             }
 
