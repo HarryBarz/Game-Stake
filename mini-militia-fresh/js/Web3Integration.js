@@ -358,18 +358,21 @@ class Web3Integration {
                 await this.setupContracts();
             }
             
-            // Ensure EVVM ID is set - fetch from contract
+            // CRITICAL: Fetch EVVM ID from contract - signature MUST use the same ID as contract
             try {
                 const id = await this.evvmContract.getEvvmID();
                 this.evvmID = id.toString();
-                console.log('Fetched EVVM ID from contract:', this.evvmID);
+                console.log('✅ Fetched EVVM ID from contract:', this.evvmID);
+                
                 if (this.evvmID === '0') {
-                    console.warn('EVVM ID is 0 - contract may not have setEvvmID() called yet');
-                    this.evvmID = '1078'; // Use registered ID as fallback
+                    throw new Error('EVVM ID is 0. Please call setEvvmID(1078) on the EVVM contract first. The contract address is: ' + this.EVVM_ADDRESS);
                 }
             } catch (e) {
-                console.warn('Could not fetch EVVM ID:', e);
-                this.evvmID = '1078'; // Fallback
+                if (e.message && e.message.includes('setEvvmID')) {
+                    throw e; // Re-throw the setEvvmID error
+                }
+                console.error('❌ Could not fetch EVVM ID:', e);
+                throw new Error('Failed to fetch EVVM ID from contract. Please ensure the contract is properly deployed.');
             }
             
             // Check if public staking is enabled
