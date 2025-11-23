@@ -782,8 +782,9 @@ class Web3Integration {
      */
     async getUnlockTimes() {
         if (!this.account) {
+            // Default to allowing if not connected (will be checked elsewhere)
             return {
-                canStake: false,
+                canStake: true,
                 canUnstake: false,
                 stakeUnlockTime: 0,
                 fullUnstakeUnlockTime: 0
@@ -792,8 +793,9 @@ class Web3Integration {
 
         if (!this.stakingContract) {
             console.warn('Staking contract not initialized');
+            // Default to allowing if contract not ready
             return {
-                canStake: false,
+                canStake: true,
                 canUnstake: false,
                 stakeUnlockTime: 0,
                 fullUnstakeUnlockTime: 0
@@ -805,18 +807,22 @@ class Web3Integration {
             const fullUnstakeUnlockTime = await this.stakingContract.getTimeToUserUnlockFullUnstakingTime(this.account);
             const currentTime = Math.floor(Date.now() / 1000);
 
+            const stakeUnlock = Number(stakeUnlockTime);
+            const fullUnstakeUnlock = Number(fullUnstakeUnlockTime);
+
             return {
-                canStake: Number(stakeUnlockTime) === 0 || Number(stakeUnlockTime) <= currentTime,
-                canUnstake: Number(fullUnstakeUnlockTime) === 0 || Number(fullUnstakeUnlockTime) <= currentTime,
-                stakeUnlockTime: Number(stakeUnlockTime),
-                fullUnstakeUnlockTime: Number(fullUnstakeUnlockTime),
-                stakeUnlockDate: Number(stakeUnlockTime) > 0 ? new Date(Number(stakeUnlockTime) * 1000) : null,
-                fullUnstakeUnlockDate: Number(fullUnstakeUnlockTime) > 0 ? new Date(Number(fullUnstakeUnlockTime) * 1000) : null
+                canStake: stakeUnlock === 0 || stakeUnlock <= currentTime,
+                canUnstake: fullUnstakeUnlock === 0 || fullUnstakeUnlock <= currentTime,
+                stakeUnlockTime: stakeUnlock,
+                fullUnstakeUnlockTime: fullUnstakeUnlock,
+                stakeUnlockDate: stakeUnlock > 0 ? new Date(stakeUnlock * 1000) : null,
+                fullUnstakeUnlockDate: fullUnstakeUnlock > 0 ? new Date(fullUnstakeUnlock * 1000) : null
             };
         } catch (error) {
             console.error('Error getting unlock times:', error);
+            // On error, default to allowing staking (better UX)
             return {
-                canStake: false,
+                canStake: true,
                 canUnstake: false,
                 stakeUnlockTime: 0,
                 fullUnstakeUnlockTime: 0

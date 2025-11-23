@@ -129,7 +129,17 @@ class LandingPage {
         // Setup staking buttons
         this.setupStakingButtons();
 
-        // Refresh staking data
+        // Enable buttons by default (will be updated after data loads)
+        const stakeBtn = document.getElementById('stakeBtnFull');
+        const unstakeBtn = document.getElementById('unstakeBtnFull');
+        if (stakeBtn) {
+            stakeBtn.disabled = false; // Start enabled
+        }
+        if (unstakeBtn) {
+            unstakeBtn.disabled = false; // Start enabled
+        }
+
+        // Refresh staking data (this will update button states)
         this.refreshStakingData();
     }
 
@@ -344,8 +354,40 @@ class LandingPage {
             const stakeBtn = document.getElementById('stakeBtnFull');
             const unstakeBtn = document.getElementById('unstakeBtnFull');
             
-            stakeBtn.disabled = !info.enabled || !info.unlockTimes.canStake;
-            unstakeBtn.disabled = !info.enabled || info.staked === 0 || !info.unlockTimes.canUnstake;
+            // Only disable stake button if staking is disabled OR unlock time hasn't passed
+            // But allow staking if unlockTimes check fails (default to allowing)
+            const canStakeNow = info.enabled && (info.unlockTimes.canStake !== false);
+            stakeBtn.disabled = !canStakeNow;
+            
+            // Show helpful message if disabled
+            if (stakeBtn.disabled) {
+                if (!info.enabled) {
+                    stakeBtn.title = 'Public staking is currently disabled';
+                } else if (!info.unlockTimes.canStake) {
+                    const unlockDate = info.unlockTimes.stakeUnlockDate;
+                    stakeBtn.title = `Can stake again at: ${unlockDate ? unlockDate.toLocaleString() : 'soon'}`;
+                }
+            } else {
+                stakeBtn.title = 'Click to stake tokens';
+            }
+            
+            // Unstake button - only disable if no staked tokens or can't unstake
+            unstakeBtn.disabled = !info.enabled || info.staked === 0 || (info.unlockTimes.canUnstake === false && info.staked > 0);
+            
+            if (unstakeBtn.disabled && info.staked > 0) {
+                const unlockDate = info.unlockTimes.fullUnstakeUnlockDate;
+                unstakeBtn.title = `Full unstake available at: ${unlockDate ? unlockDate.toLocaleString() : 'soon'}`;
+            } else {
+                unstakeBtn.title = 'Click to unstake tokens';
+            }
+            
+            console.log('🔘 Button states:', {
+                stakeEnabled: canStakeNow,
+                unstakeEnabled: !unstakeBtn.disabled,
+                publicStakingEnabled: info.enabled,
+                canStake: info.unlockTimes.canStake,
+                staked: info.staked
+            });
 
             // Update play button if it exists
             const playBtn = document.getElementById('startGameBtn');
