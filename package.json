@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@evvm/testnet-contracts": "^2.1.3"
+  }
+}

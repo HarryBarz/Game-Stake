@@ -1,0 +1,22 @@
+# Foundry
+out/
+cache/
+cache_forge/
+lib/forge-std/
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+node_modules
+
+# Environment variables
+.env
