@@ -510,21 +510,30 @@ class Web3Integration {
             // Restore original EVVM ID (though they should be the same now)
             this.evvmID = originalEvvmID;
 
+            // CRITICAL: Verify user address matches signer exactly
+            const signerAddress = await this.signer.getAddress();
+            const userAddress = ethers.utils.getAddress(this.account);
+            if (signerAddress.toLowerCase() !== userAddress.toLowerCase()) {
+                throw new Error(`Address mismatch: signer=${signerAddress}, account=${userAddress}`);
+            }
+
             console.log('Staking parameters:', {
-                user: this.account,
+                user: userAddress,
+                signer: signerAddress,
                 isStaking: true,
                 amount: amountForContract,
                 stakingNonce: stakingNonce.toString(),
                 evvmNonce: evvmNonce.toString(),
-                evvmID: this.evvmID,
+                evvmID: evvmIDForSignature,
                 totalHGMAmount: ethers.utils.formatEther(totalAmount)
             });
 
             // Call publicStaking - amount must be integer (staking tokens)
+            // CRITICAL: All parameters must match exactly what was used in signatures
             const tx = await this.stakingContract.publicStaking(
-                this.account,           // user
+                userAddress,            // user - must match signer address used in signature
                 true,                   // isStaking
-                amountForContract,      // amountOfStaking (must be integer, in staking tokens)
+                amountForContract,       // amountOfStaking (must be integer, in staking tokens)
                 stakingNonce,           // nonce
                 stakingSignature,       // signature
                 0,                      // priorityFee_EVVM
