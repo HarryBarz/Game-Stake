@@ -445,22 +445,46 @@ class Web3Integration {
                 throw new Error('Staking amount must be at least 1 staking token');
             }
 
+            // CRITICAL: Fetch EVVM ID fresh from contract to ensure it matches what contract will use
+            let evvmIDForSignature;
+            try {
+                const id = await this.evvmContract.getEvvmID();
+                evvmIDForSignature = id.toString();
+                if (evvmIDForSignature === '0') {
+                    console.warn('⚠️ EVVM ID is 0 on contract. Using registered ID 1078.');
+                    evvmIDForSignature = '1078';
+                }
+                // Update our cached value
+                this.evvmID = evvmIDForSignature;
+            } catch (error) {
+                console.warn('Could not fetch EVVM ID, using cached:', error);
+                evvmIDForSignature = this.evvmID || '1078';
+            }
+
             console.log('=== STAKING DEBUG ===');
-            console.log('EVVM ID:', this.evvmID);
+            console.log('EVVM ID (from contract):', evvmIDForSignature);
+            console.log('EVVM ID (cached):', this.evvmID);
             console.log('Amount for contract:', amountForContract);
             console.log('Staking nonce:', stakingNonce);
             console.log('EVVM nonce:', evvmNonce);
 
             // Generate signatures - CRITICAL: amount in signature must match amount sent to contract
+            // Temporarily set evvmID to the fresh value for signature generation
+            const originalEvvmID = this.evvmID;
+            this.evvmID = evvmIDForSignature;
             const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonce);
             
             // CRITICAL: For sync payments, the nonce in signature must match getNextCurrentSyncNonce
+            // Use the same fresh EVVM ID for EVVM signature
             const evvmSignature = await this.generateEVVMSignature(
                 totalAmount,    // amount in wei
                 0,              // priority fee
                 evvmNonce,      // nonce (must match getNextCurrentSyncNonce for sync)
                 false           // sync (priorityFlag = false)
             );
+            
+            // Restore original EVVM ID (though they should be the same now)
+            this.evvmID = originalEvvmID;
 
             console.log('Staking parameters:', {
                 user: this.account,
