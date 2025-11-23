@@ -282,40 +282,14 @@ class Web3Integration {
         const receiver = ethers.utils.getAddress(this.STAKING_ADDRESS);
         const token = ethers.utils.getAddress(this.PRINCIPAL_TOKEN_ADDRESS);
         // CRITICAL: Executor must be Staking contract address, not user address!
-        // The Staking contract passes address(this) as executor when calling pay()
         const executor = ethers.utils.getAddress(this.STAKING_ADDRESS);
         
         // Message format: {evvmID},pay,{receiverAddress},{token},{amount},{priorityFee},{nonce},{priorityFlag},{executor}
-        const message = `${this.evvmID},pay,${receiver},${token},${amount.toString()},${priorityFee.toString()},${nonce.toString()},${isAsync ? 'true' : 'false'},${executor}`;
-        
-        console.log('=== EVVM PAYMENT SIGNATURE DEBUG ===');
-        console.log('Full message to sign:', message);
-        console.log('Message components:', {
-            evvmID: this.evvmID,
-            functionName: 'pay',
-            receiver: receiver,
-            token: token,
-            amount: amount.toString(),
-            priorityFee: priorityFee.toString(),
-            nonce: nonce.toString(),
-            priorityFlag: isAsync ? 'true' : 'false',
-            executor: executor
-        });
-        console.log('Signer address:', await this.signer.getAddress());
+        // CRITICAL: amount is BigNumber, convert to string without decimals
+        const amountStr = typeof amount === 'object' && amount.toString ? amount.toString() : amount.toString();
+        const message = `${this.evvmID},pay,${receiver},${token},${amountStr},${priorityFee.toString()},${nonce.toString()},${isAsync ? 'true' : 'false'},${executor}`;
         
         const signature = await this.signer.signMessage(message);
-        
-        // Verify signature locally
-        try {
-            const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-            console.log('✅ EVVM Signature verification:', recoveredAddress === await this.signer.getAddress() ? 'PASSED' : 'FAILED');
-            console.log('Expected:', await this.signer.getAddress());
-            console.log('Recovered:', recoveredAddress);
-        } catch (e) {
-            console.warn('Could not verify EVVM signature locally:', e);
-        }
-        
-        console.log('EVVM Signature (first 20 chars):', signature.slice(0, 20) + '...');
         return signature;
     }
 
@@ -438,20 +412,21 @@ class Web3Integration {
             }
             this.evvmID = evvmIDForSignature;
 
-            // Generate signatures with fresh EVVM ID
-            const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonce);
-            const evvmSignature = await this.generateEVVMSignature(
-                totalAmount,
-                0,
-                evvmNonce,
-                false
-            );
-
             const userAddress = ethers.utils.getAddress(this.account);
             
-            // CRITICAL: Convert nonces to proper types for contract
+            // CRITICAL: Ensure nonce is a number (not string) for signature generation
+            // But use the same value (as string) in the signature message
             const stakingNonceNum = parseInt(stakingNonce.toString());
             const evvmNonceNum = parseInt(evvmNonce.toString());
+            
+            // Generate signatures - use string nonce for message, number for contract call
+            const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonceNum.toString());
+            const evvmSignature = await this.generateEVVMSignature(
+                totalAmount,
+                evvmNonceNum.toString(),
+                0,
+                false
+            );
             
             const tx = await this.stakingContract.publicStaking(
                 userAddress,
