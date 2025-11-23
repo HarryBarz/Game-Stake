@@ -166,14 +166,13 @@ class Web3Integration {
             this.evvmID = id.toString();
             // If ID is 0, it means it hasn't been set yet - use a placeholder
             if (this.evvmID === '0') {
-                console.warn('EVVM ID not set yet. Please set it using setEvvmID() on the EVVM contract.');
-                // Use a temporary ID for testing - replace with actual ID after registration
-                this.evvmID = '1000'; // Replace with your actual EVVM ID after registration
+                console.warn('EVVM ID not set yet. Using registered ID 1078.');
+                this.evvmID = '1078'; // Your registered EVVM ID
             }
         } catch (error) {
             console.warn('Could not fetch EVVM ID:', error);
-            // Use placeholder - MUST be replaced with actual ID
-            this.evvmID = '1000'; // Replace with your actual EVVM ID after registration
+            // Use your registered EVVM ID as fallback
+            this.evvmID = '1078'; // Your registered EVVM ID
         }
     }
 
@@ -358,11 +357,22 @@ class Web3Integration {
                 false           // sync (priorityFlag = false)
             );
 
+            // Convert amount to BigNumber (staking tokens, not wei)
+            const amountBN = ethers.BigNumber.from(Math.floor(parseFloat(amount) * 1000000).toString()).div(1000000);
+            
+            console.log('Staking parameters:', {
+                user: this.account,
+                isStaking: true,
+                amount: amountBN.toString(),
+                stakingNonce: stakingNonce.toString(),
+                evvmNonce: evvmNonce.toString()
+            });
+
             // Call publicStaking
             const tx = await this.stakingContract.publicStaking(
                 this.account,           // user
                 true,                   // isStaking
-                amount,                 // amountOfStaking (in staking tokens, not wei)
+                amountBN,               // amountOfStaking (in staking tokens, as BigNumber)
                 stakingNonce,           // nonce
                 stakingSignature,       // signature
                 0,                      // priorityFee_EVVM
@@ -399,10 +409,13 @@ class Web3Integration {
                 false           // sync
             );
 
+            // Convert amount to BigNumber (staking tokens, not wei)
+            const amountBN = ethers.BigNumber.from(Math.floor(parseFloat(amount) * 1000000).toString()).div(1000000);
+            
             const tx = await this.stakingContract.publicStaking(
                 this.account,
                 false, // isStaking
-                amount,
+                amountBN, // amountOfStaking (in staking tokens, as BigNumber)
                 stakingNonce,
                 stakingSignature,
                 0,      // priorityFee_EVVM (optional for unstaking)

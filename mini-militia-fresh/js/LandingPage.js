@@ -211,7 +211,7 @@ class LandingPage {
 
         try {
             const staked = await this.web3.getUserStakedAmount();
-            const balance = await this.web3.getBalance();
+            const balance = await this.web3.getUserBalance();
             const price = await this.web3.getStakingPrice();
             const enabled = await this.web3.isPublicStakingEnabled();
 
