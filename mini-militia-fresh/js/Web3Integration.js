@@ -254,51 +254,15 @@ class Web3Integration {
         const nonceStr = nonce.toString(); // Convert to string
         
         // CRITICAL: Message format must match contract EXACTLY
-        // Contract: SignatureRecover.signatureVerification(
-        //   Strings.toString(evvmID),  // EVVM ID as string
-        //   "publicStaking",           // function name
-        //   string.concat("true", ",", Strings.toString(amount), ",", Strings.toString(nonce)),  // inputs
-        //   signature,
-        //   user
-        // )
-        // Final message: "{evvmID},publicStaking,{isStaking},{amount},{nonce}"
+        // Contract builds: string.concat(evvmID, ",", "publicStaking", ",", string.concat("true", ",", amount, ",", nonce))
+        // This creates: "{evvmID},publicStaking,true,{amount},{nonce}"
         const message = `${this.evvmID},publicStaking,${isStaking ? 'true' : 'false'},${amountStr},${nonceStr}`;
         
         const signerAddress = await this.signer.getAddress();
         
-        console.log('=== STAKING SIGNATURE DEBUG ===');
-        console.log('Full message to sign:', message);
-        console.log('Message components:', {
-            evvmID: this.evvmID,
-            functionName: 'publicStaking',
-            isStaking: isStaking ? 'true' : 'false',
-            amount: amountStr,
-            nonce: nonceStr
-        });
-        console.log('Signer address:', signerAddress);
-        console.log('Message length:', message.length);
-        
         // Sign message using EIP-191 format (ethers.js signMessage handles this automatically)
-        // ethers.js signMessage adds: "\x19Ethereum Signed Message:\n" + length + message
         const signature = await this.signer.signMessage(message);
         
-        // Verify signature locally to catch errors early
-        try {
-            const recoveredAddress = ethers.utils.verifyMessage(message, signature);
-            const isValid = recoveredAddress.toLowerCase() === signerAddress.toLowerCase();
-            console.log('✅ Local signature verification:', isValid ? 'PASSED' : 'FAILED');
-            if (!isValid) {
-                console.error('❌ Signature mismatch!');
-                console.error('Expected signer:', signerAddress);
-                console.error('Recovered address:', recoveredAddress);
-                throw new Error('Signature verification failed locally');
-            }
-        } catch (e) {
-            console.error('❌ Local signature verification error:', e);
-            throw e;
-        }
-        
-        console.log('✅ Staking signature generated successfully');
         return signature;
     }
 
@@ -466,95 +430,35 @@ class Web3Integration {
                 throw new Error('Staking amount must be at least 1 staking token');
             }
 
-            // CRITICAL: Fetch EVVM ID fresh from contract to ensure it matches what contract will use
-            // The contract calls Evvm(EVVM_ADDRESS).getEvvmID() when verifying, so we must use the exact same value
-            let evvmIDForSignature;
-            try {
-                const id = await this.evvmContract.getEvvmID();
-                evvmIDForSignature = id.toString();
-                if (evvmIDForSignature === '0') {
-                    throw new Error('EVVM ID is 0 on contract. You must call setEvvmID(1078) on the EVVM contract first.');
-                }
-                // Update our cached value
-                if (this.evvmID !== evvmIDForSignature) {
-                    console.warn('⚠️ EVVM ID changed! Old:', this.evvmID, 'New:', evvmIDForSignature);
-                }
-                this.evvmID = evvmIDForSignature;
-            } catch (error) {
-                console.error('❌ Failed to fetch EVVM ID:', error);
-                throw new Error('Failed to fetch EVVM ID from contract: ' + error.message);
+            // CRITICAL: Fetch EVVM ID fresh from contract - contract uses this exact value
+            const id = await this.evvmContract.getEvvmID();
+            const evvmIDForSignature = id.toString();
+            if (evvmIDForSignature === '0') {
+                throw new Error('EVVM ID is 0. Call setEvvmID(1078) on EVVM contract: ' + this.EVVM_ADDRESS);
             }
-
-            console.log('=== STAKING DEBUG ===');
-            console.log('EVVM ID (from contract):', evvmIDForSignature);
-            console.log('EVVM ID (cached):', this.evvmID);
-            console.log('Amount for contract:', amountForContract);
-            console.log('Staking nonce:', stakingNonce);
-            console.log('EVVM nonce:', evvmNonce);
-
-            // Generate signatures - CRITICAL: amount in signature must match amount sent to contract
-            // Temporarily set evvmID to the fresh value for signature generation
-            const originalEvvmID = this.evvmID;
             this.evvmID = evvmIDForSignature;
+
+            // Generate signatures with fresh EVVM ID
             const stakingSignature = await this.generateStakingSignature(true, amountForContract.toString(), stakingNonce);
-            
-            // CRITICAL: For sync payments, the nonce in signature must match getNextCurrentSyncNonce
-            // Use the same fresh EVVM ID for EVVM signature
             const evvmSignature = await this.generateEVVMSignature(
-                totalAmount,    // amount in wei
-                0,              // priority fee
-                evvmNonce,      // nonce (must match getNextCurrentSyncNonce for sync)
-                false           // sync (priorityFlag = false)
+                totalAmount,
+                0,
+                evvmNonce,
+                false
             );
-            
-            // Restore original EVVM ID (though they should be the same now)
-            this.evvmID = originalEvvmID;
 
-            // CRITICAL: Verify user address matches signer exactly
-            const signerAddress = await this.signer.getAddress();
             const userAddress = ethers.utils.getAddress(this.account);
-            if (signerAddress.toLowerCase() !== userAddress.toLowerCase()) {
-                throw new Error(`Address mismatch: signer=${signerAddress}, account=${userAddress}`);
-            }
-
-            console.log('=== FINAL STAKING PARAMETERS ===');
-            console.log('User address:', userAddress);
-            console.log('Signer address:', signerAddress);
-            console.log('EVVM ID for signature:', evvmIDForSignature);
-            console.log('Amount (staking tokens):', amountForContract);
-            console.log('Staking nonce:', stakingNonce.toString());
-            console.log('EVVM nonce:', evvmNonce.toString());
-            console.log('Total HGM amount:', ethers.utils.formatEther(totalAmount));
-            console.log('Staking signature length:', stakingSignature.length);
-            console.log('EVVM signature length:', evvmSignature.length);
-            
-            // Verify the exact message that will be checked by contract
-            const expectedMessage = `${evvmIDForSignature},publicStaking,true,${amountForContract},${stakingNonce}`;
-            console.log('Expected message for contract:', expectedMessage);
-            
-            // Call publicStaking - amount must be integer (staking tokens)
-            // CRITICAL: All parameters must match exactly what was used in signatures
-            console.log('Calling publicStaking with parameters:');
-            console.log('  user:', userAddress);
-            console.log('  isStaking: true');
-            console.log('  amountOfStaking:', amountForContract);
-            console.log('  nonce:', stakingNonce.toString());
-            console.log('  signature:', stakingSignature.slice(0, 20) + '...');
-            console.log('  priorityFee_EVVM: 0');
-            console.log('  nonce_EVVM:', evvmNonce.toString());
-            console.log('  priorityFlag_EVVM: false');
-            console.log('  signature_EVVM:', evvmSignature.slice(0, 20) + '...');
             
             const tx = await this.stakingContract.publicStaking(
-                userAddress,            // user - must match signer address used in signature
-                true,                   // isStaking
-                amountForContract,       // amountOfStaking (must be integer, in staking tokens)
-                stakingNonce,           // nonce
-                stakingSignature,       // signature
-                0,                      // priorityFee_EVVM
-                evvmNonce,              // nonce_EVVM (for sync, this should match nextSyncUsedNonce)
-                false,                  // priorityFlag_EVVM (false = sync)
-                evvmSignature           // signature_EVVM
+                userAddress,
+                true,
+                amountForContract,
+                stakingNonce,
+                stakingSignature,
+                0,
+                evvmNonce,
+                false,
+                evvmSignature
             );
 
             return tx;
